@@ -1,0 +1,5 @@
+export(simdata, HSROC, HSROCSummary, beta.parameter)
+
+importFrom(coda, mcmc, HPDinterval)
+importFrom(MCMCpack, rinvgamma, dinvgamma)
+
