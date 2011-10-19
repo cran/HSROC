@@ -12,10 +12,10 @@ This dataset gives the observed cross-tabulation of the MRI (test under evaluati
 \format{
   A matrix with 10 observations on the following 4 variables.
   \describe{
-    \item{\code{TP}}{Observed individuals who tested positive on both tests }
-    \item{\code{FP}}{Observed individuals who tested positive on the test under evaluation and negative on the reference test}
-    \item{\code{FN}}{Observed individuals who tested negative on the test under evaluation and positive on the reference test}
-    \item{\code{TN}}{Observed individuals who tested negative on both tests }
+    \item{\code{++}}{Observed individuals who tested positive on both tests }
+    \item{\code{+-}}{Observed individuals who tested positive on the test under evaluation and negative on the reference test}
+    \item{\code{-+}}{Observed individuals who tested negative on the test under evaluation and positive on the reference test}
+    \item{\code{---}}{Observed individuals who tested negative on both tests }
   }
 }
 

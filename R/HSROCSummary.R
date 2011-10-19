@@ -1,5 +1,5 @@
 HSROCSummary <-
-function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL, 
+function (data, burn_in = 0, iter.keep = NULL, Thin = 1, sub_rs = NULL, 
     point_estimate = c("median", "mean"), path = getwd(), chain = NULL, 
     tv = NULL, digit = 6, print_plot = FALSE) 
 {
@@ -11,9 +11,9 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
         cat("The 'burn_in' argument must be greater or equal than zero. \n")
         stop("Please respecify and call HSROCSummary() again.\n")
     }
-    if (is.null(i) == FALSE) {
-        if (i < 0) {
-            cat("The 'i' argument must be greater or equal than zero. \n")
+    if (is.null(iter.keep) == FALSE) {
+        if (iter.keep < 0) {
+            cat("The 'iter.keep' argument must be greater or equal than zero. \n")
             stop("Please respecify and call HSROCSummary() again.\n")
         }
     }
@@ -54,6 +54,8 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
     model = read.table("model.txt", header = FALSE)
     Gold_se = (read.table("S2.txt", header = FALSE) == 1)
     Gold_sp = (read.table("C2.txt", header = FALSE) == 1)
+    prior_sig_t = read.table("Prior on sigma_theta.txt", header = FALSE)
+    prior_sig_a = read.table("Prior on sigma_alpha.txt", header = FALSE)
     if (length(prior[, 1]) == 7) {
         Gold_Std = TRUE
         condInd = TRUE
@@ -105,7 +107,7 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
     up.pi = prior[6, 2]
     low.rj = prior[7, 1]
     up.rj = prior[7, 2]
-    if (l.disp.theta == u.disp.theta) {
+    if (l.disp.theta == 0 & u.disp.theta == 0) {
         SCO = TRUE
     }
     else {
@@ -232,15 +234,17 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
         PI = read.table(file.PI)
         S1 = read.table(file.Sens1)
         C1 = read.table(file.Spec1)
+        S1_new = read.table("Sens1_new.txt")
+        C1_new = read.table("Spec1_new.txt")
         sigma.alpha = read.table(file.sigma.alpha)
         alpha = read.table(file.alpha)
         S_overall = read.table(file.S_overall)
         C_overall = read.table(file.C_overall)
-        if (is.null(i) == T) {
+        if (is.null(iter.keep) == T) {
             iter.num = length(THETA[, 1])
         }
         else {
-            iter.num = i
+            iter.num = iter.keep
         }
         if ((iter.num - burn_in)/Thin < 100) 
             stop("You don't have enough iterations to estimate the MC error.  After taking into account the \"burn in\" and \"thinning interval\", you need at least 100 iterations to proceed.")
@@ -254,6 +258,8 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
         sigma.alpha = sigma.alpha[(q + 1):total, 1]
         S1 = S1[(q + 1):total, ]
         C1 = C1[(q + 1):total, ]
+        S1_new = S1_new[(q + 1):total, 1]
+        C1_new = C1_new[(q + 1):total, 1]
         C_overall = C_overall[(q + 1):total, 1]
         S_overall = S_overall[(q + 1):total, 1]
         taille = length((q + 1):total)
@@ -271,6 +277,8 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
         S1 = S1[thin, ]
         C1 = as.matrix(C1)
         C1 = C1[thin, ]
+        S1_new = S1_new[thin]
+        C1_new = C1_new[thin]
         C_overall = C_overall[thin]
         S_overall = S_overall[thin]
         if (SCO == FALSE) {
@@ -369,7 +377,7 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
     else {
         if (is.null(chain) == FALSE) {
             K = length(chain)
-            theta = alpha = THETA = LAMBDA = beta = PI = sigma.alpha = sigma.theta = S1 = C1 = S2 = C2 = S_overall = C_overall = a1 = a0 = b1 = b0 = d1 = d0 = numeric()
+            theta = alpha = THETA = LAMBDA = beta = PI = sigma.alpha = sigma.theta = S1 = C1 = S1_new = C1_new = S2 = C2 = S_overall = C_overall = a1 = a0 = b1 = b0 = d1 = d0 = numeric()
             for (k in 1:K) {
                 setwd(chain[[k]])
                 T = read.table(file.capital.THETA)
@@ -378,15 +386,17 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                 p = read.table(file.PI)
                 S.1 = read.table(file.Sens1)
                 C.1 = read.table(file.Spec1)
+                S.1_new = read.table("Sens1_new.txt")
+                C.1_new = read.table("Spec1_new.txt")
                 sig.a = read.table(file.sigma.alpha)
                 a = read.table(file.alpha)
                 S.ov = read.table(file.S_overall)
                 C.ov = read.table(file.C_overall)
-                if (is.null(i) == TRUE) {
+                if (is.null(iter.keep) == TRUE) {
                   iter.num = length(T[, 1])
                 }
                 else {
-                  iter.num = i
+                  iter.num = iter.keep
                 }
                 if ((iter.num - burn_in)/Thin < 100) 
                   stop("You don't have enough iterations to estimate the MC error.  After taking into account the \"burn in\" and \"thinning interval\", you need at least 100 iterations to proceed.")
@@ -400,6 +410,8 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                 sig.a = sig.a[(q + 1):total, 1]
                 S.1 = S.1[(q + 1):total, ]
                 C.1 = C.1[(q + 1):total, ]
+                S.1_new = S.1_new[(q + 1):total, 1]
+                C.1_new = C.1_new[(q + 1):total, 1]
                 C.ov = C.ov[(q + 1):total, 1]
                 S.ov = S.ov[(q + 1):total, 1]
                 taille = length((q + 1):total)
@@ -417,6 +429,8 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                 S.1 = S.1[thin, ]
                 C.1 = as.matrix(C.1)
                 C.1 = C.1[thin, ]
+                S.1_new = S.1_new[thin]
+                C.1_new = C.1_new[thin]
                 C.ov = C.ov[thin]
                 S.ov = S.ov[thin]
                 alpha = rbind(alpha, as.matrix(a))
@@ -427,6 +441,8 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                 sigma.alpha = rbind(sigma.alpha, as.matrix(sig.a))
                 S1 = rbind(S1, as.matrix(S.1))
                 C1 = rbind(C1, as.matrix(C.1))
+                S1_new = rbind(S1_new, as.matrix(S.1_new))
+                C1_new = rbind(C1_new, as.matrix(C.1_new))
                 C_overall = rbind(C_overall, as.matrix(C.ov))
                 S_overall = rbind(S_overall, as.matrix(S.ov))
                 if (SCO == FALSE) {
@@ -552,6 +568,8 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
     sigma.alpha = as.mcmc(sigma.alpha)
     S1 = as.mcmc(S1)
     C1 = as.mcmc(C1)
+    S1_new = as.mcmc(S1_new)
+    C1_new = as.mcmc(C1_new)
     C_overall = as.mcmc(C_overall)
     S_overall = as.mcmc(S_overall)
     if (SCO == FALSE) {
@@ -599,6 +617,12 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
     C1.est = apply(as.matrix(C1), 2, point_estimate)
     C1.HPD = HPDinterval(C1)
     C1.sd = sd(C1)
+    S1_new.est = apply(as.matrix(S1_new), 2, point_estimate)
+    S1_new.HPD = HPDinterval(S1_new)
+    S1_new.sd = sd(S1_new)
+    C1_new.est = apply(as.matrix(C1_new), 2, point_estimate)
+    C1_new.HPD = HPDinterval(C1_new)
+    C1_new.sd = sd(C1_new)
     C_overall.est = apply(as.matrix(C_overall), 2, point_estimate)
     C_overall.HPD = HPDinterval(C_overall)
     C_overall.sd = sd(C_overall)
@@ -689,7 +713,7 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
     }
     batch = 50
     ssize = iter.size/batch
-    moy.t = moy.a = moy.T = moy.L = moy.b = moy.p = moy.sig.a = moy.sig.t = moy.s2 = moy.c2 = moy.s1 = moy.c1 = moy.s.ov = moy.c.ov = moy.a1 = moy.a0 = moy.b1 = moy.b0 = moy.d1 = moy.d0 = numeric()
+    moy.t = moy.a = moy.T = moy.L = moy.b = moy.p = moy.sig.a = moy.sig.t = moy.s2 = moy.c2 = moy.s1 = moy.c1 = moy.s1_new = moy.c1_new = moy.s.ov = moy.c.ov = moy.a1 = moy.a0 = moy.b1 = moy.b0 = moy.d1 = moy.d0 = numeric()
     if (N == 1) {
         for (i in 1:batch) {
             moy.a = c(moy.a, mean(alpha[round((1 + ssize * (i - 
@@ -711,6 +735,10 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
             moy.s.ov = c(moy.s.ov, mean(S_overall[round((1 + 
                 ssize * (i - 1)), 0):round((ssize * i), 0)]))
             moy.c.ov = c(moy.c.ov, mean(C_overall[round((1 + 
+                ssize * (i - 1)), 0):round((ssize * i), 0)]))
+            moy.s1_new = c(moy.s1_new, mean(S1_new[round((1 + 
+                ssize * (i - 1)), 0):round((ssize * i), 0)]))
+            moy.c1_new = c(moy.c1_new, mean(C1_new[round((1 + 
                 ssize * (i - 1)), 0):round((ssize * i), 0)]))
             if (SCO == FALSE) {
                 moy.t = c(moy.t, mean(theta[round((1 + ssize * 
@@ -741,6 +769,10 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
             moy.s.ov = c(moy.s.ov, mean(S_overall[round((1 + 
                 ssize * (i - 1)), 0):round((ssize * i), 0)]))
             moy.c.ov = c(moy.c.ov, mean(C_overall[round((1 + 
+                ssize * (i - 1)), 0):round((ssize * i), 0)]))
+            moy.s1_new = c(moy.s1_new, mean(S1_new[round((1 + 
+                ssize * (i - 1)), 0):round((ssize * i), 0)]))
+            moy.c1_new = c(moy.c1_new, mean(C1_new[round((1 + 
                 ssize * (i - 1)), 0):round((ssize * i), 0)]))
             if (SCO == FALSE) {
                 moy.t = cbind(moy.t, colSums(theta[round((1 + 
@@ -794,6 +826,10 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
     S_overall.MCerror = sqrt(sum((moy.s.ov - mean(S_overall))^2)/(batch - 
         1))/sqrt(batch)
     C_overall.MCerror = sqrt(sum((moy.c.ov - mean(C_overall))^2)/(batch - 
+        1))/sqrt(batch)
+    S1_new.MCerror = sqrt(sum((moy.s1_new - mean(S1_new))^2)/(batch - 
+        1))/sqrt(batch)
+    C1_new.MCerror = sqrt(sum((moy.c1_new - mean(C1_new))^2)/(batch - 
         1))/sqrt(batch)
     if (condInd == TRUE & Gold_Std == FALSE & model == 1) {
         if (Gold_se == TRUE & Gold_sp == FALSE) {
@@ -1182,11 +1218,44 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
         write(paste("Prior of LAMBDA is Uniform(", prior.LAMBDA.lower, 
             ",", prior.LAMBDA.upper, ")"), file = test.file, 
             append = TRUE)
-        write(paste("Prior of sigma_alpha is uniform(", l.disp.alpha, 
-            ",", u.disp.alpha, ")"), file = test.file, append = TRUE)
+        if (prior_sig_a == 1) {
+            write(paste("Prior of sigma_alpha is uniform(", l.disp.alpha, 
+                ",", u.disp.alpha, ")"), file = test.file, append = TRUE)
+        }
+        else {
+            if (prior_sig_a == 2) {
+                write(paste("Prior of sigma_alpha^2 is uniform(", 
+                  l.disp.alpha, ",", u.disp.alpha, ")"), file = test.file, 
+                  append = TRUE)
+            }
+            else {
+                if (prior_sig_a == 3) {
+                  write(paste("Prior of precision of sigma_alpha is gamma(", 
+                    l.disp.alpha, ",", u.disp.alpha, ")"), file = test.file, 
+                    append = TRUE)
+                }
+            }
+        }
         if (SCO == FALSE) {
-            write(paste("Prior of sigma_theta is uniform(", l.disp.theta, 
-                ",", u.disp.theta, ")"), file = test.file, append = TRUE)
+            if (prior_sig_t == 1) {
+                write(paste("Prior of sigma_theta is uniform(", 
+                  l.disp.theta, ",", u.disp.theta, ")"), file = test.file, 
+                  append = TRUE)
+            }
+            else {
+                if (prior_sig_t == 2) {
+                  write(paste("Prior of sigma_theta^2 is uniform(", 
+                    l.disp.theta, ",", u.disp.theta, ")"), file = test.file, 
+                    append = TRUE)
+                }
+                else {
+                  if (prior_sig_t == 3) {
+                    write(paste("Prior of precision of sigma_theta is gamma(", 
+                      l.disp.theta, ",", u.disp.theta, ")"), 
+                      file = test.file, append = TRUE)
+                  }
+                }
+            }
         }
         if (condInd == TRUE & Gold_Std == FALSE & model == 1) {
             write(paste(""), file = test.file, append = TRUE)
@@ -1838,6 +1907,36 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                 round(C1.HPD[i, 2], digits = digit)), file = test.file, 
                 append = TRUE)
         }
+        write(paste("______________________________________________________"), 
+            file = test.file, append = TRUE)
+        write(paste("\tPosterior predictive value of Sensitivity of test under evaluation (S1) \t "), 
+            file = test.file, append = TRUE)
+        write(paste("______________________________________________________"), 
+            file = test.file, append = TRUE)
+        write(paste(""), file = test.file, append = TRUE)
+        write(paste("         True_value Estimate Standard_dev MC_error C.I._lower C.I._upper"), 
+            file = test.file, append = TRUE)
+        write(paste(""), file = test.file, append = TRUE)
+        write(paste("Sensitivity     ------ ", round(S1_new.est, 
+            digits = digit), "", round(S1_new.sd, digits = digit), 
+            "", round(S1_new.MCerror, digits = digit), "", round(S1_new.HPD[1], 
+                digits = digit), "", round(S1_new.HPD[2], digits = digit)), 
+            file = test.file, append = TRUE)
+        write(paste("______________________________________________________"), 
+            file = test.file, append = TRUE)
+        write(paste("\tPosterior predictive value of Specificity of test under evaluation (C1) \t "), 
+            file = test.file, append = TRUE)
+        write(paste("______________________________________________________"), 
+            file = test.file, append = TRUE)
+        write(paste(""), file = test.file, append = TRUE)
+        write(paste("         True_value Estimate Standard_dev MC_error C.I._lower C.I._upper"), 
+            file = test.file, append = TRUE)
+        write(paste(""), file = test.file, append = TRUE)
+        write(paste("Specificity     ------ ", round(C1_new.est, 
+            digits = digit), "", round(C1_new.sd, digits = digit), 
+            "", round(C1_new.MCerror, digits = digit), "", round(C1_new.HPD[1], 
+                digits = digit), "", round(C1_new.HPD[2], digits = digit)), 
+            file = test.file, append = TRUE)
         Num_study = c()
         for (i in 1:N) {
             Num_study = c(Num_study, paste("Study", i))
@@ -1863,7 +1962,7 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                         round((iter.num * nb_chains - (burn_in) * 
                           nb_chains)/Thin, 0), ".pdf")
                       pdf(file.pdf_RS, paper = "a4", height = 20)
-                      param = "C2"
+                      param = "Specificity"
                       par(mfcol = c(5, 2))
                       no_chains = length(chain)
                       iter_chain = round((iter.num * nb_chains - 
@@ -1872,14 +1971,14 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                       for (i in 1:rs.length) {
                         plot(x = longueur, y = refstd_Parameters[longueur, 
                           i, 1], type = "n", col = 1, ylab = paste(param, 
-                          " of reference test ", i), xlab = "iteration number", 
+                          " of reference standard ", i), xlab = "iteration number", 
                           main = paste("Thinning interval = ", 
                             thin.interval, "\n Total samplesize kept = ", 
                             (iter.num * nb_chains - (burn_in) * 
                               nb_chains)/Thin))
                         for (l in 1:length(chain)) {
-                          lines(x = longueur, y = refstd_Parameters[l * 
-                            longueur, i, 1], col = l)
+                          lines(x = longueur, y = refstd_Parameters[, 
+                            i, 1], col = l)
                         }
                       }
                     }
@@ -1888,13 +1987,13 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                         round((iter.num * nb_chains - (burn_in) * 
                           nb_chains)/Thin, 0), ".pdf")
                       pdf(file.pdf_RS, paper = "a4", height = 20)
-                      param = "C2"
+                      param = "Specificity"
                       par(mfcol = c(5, 2))
                       longueur = 1:long
                       for (i in 1:rs.length) {
                         plot(x = longueur, y = refstd_Parameters[, 
                           i, 1], type = "l", col = "grey", ylab = paste(param, 
-                          " of study ", i), xlab = "iteration number", 
+                          " of reference standard ", i), xlab = "iteration number", 
                           main = paste("Thinning interval = ", 
                             thin.interval, "\n Total samplesize kept = ", 
                             (iter.num * nb_chains - (burn_in) * 
@@ -1906,13 +2005,13 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                       round((iter.num * nb_chains - (burn_in) * 
                         nb_chains)/Thin, 0), ".pdf")
                     pdf(file.pdf_RS2, paper = "a4", height = 20)
-                    param = "C2"
+                    param = "Specificity"
                     par(mfcol = c(5, 2))
                     longueur = 1:long
                     for (i in 1:rs.length) {
                       plot(density(refstd_Parameters[, i, 1]), 
                         lwd = 4, type = "l", col = "grey", main = paste(param, 
-                          " of study ", i, " \n Thinning interval = ", 
+                          " of reference standard ", i, " \n Thinning interval = ", 
                           thin.interval, "\n Total samplesize kept = ", 
                           (iter.num * nb_chains - (burn_in) * 
                             nb_chains)/Thin))
@@ -1941,7 +2040,7 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                         round((iter.num * nb_chains - (burn_in) * 
                           nb_chains)/Thin, 0), ".pdf")
                       pdf(file.pdf_RS, paper = "a4", height = 20)
-                      param = c("C2")
+                      param = "Specificity of reference standard"
                       par(mfcol = c(5, 2))
                       no_chains = length(chain)
                       iter_chain = round((iter.num * nb_chains - 
@@ -1954,8 +2053,8 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                           (iter.num * nb_chains - (burn_in) * 
                             nb_chains)/Thin))
                       for (l in 1:length(chain)) {
-                        lines(x = longueur, y = refstd_Parameters[l * 
-                          longueur, 1], col = l)
+                        lines(x = longueur, y = refstd_Parameters[longueur + 
+                          (iter_chain * (l - 1)), 1], col = l)
                       }
                     }
                     else {
@@ -1963,7 +2062,7 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                         round((iter.num * nb_chains - (burn_in) * 
                           nb_chains)/Thin, 0), ".pdf")
                       pdf(file.pdf_RS, paper = "a4", height = 20)
-                      param = c("C2")
+                      param = "Specificity of reference standard"
                       par(mfcol = c(5, 2))
                       longueur = 1:long
                       plot(x = longueur, y = refstd_Parameters[, 
@@ -1978,7 +2077,7 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                       round((iter.num * nb_chains - (burn_in) * 
                         nb_chains)/Thin, 0), ".pdf")
                     pdf(file.pdf_RS2, paper = "a4", height = 20)
-                    param = c("C2")
+                    param = "Specificity"
                     par(mfcol = c(5, 2))
                     longueur = 1:long
                     plot(density(refstd_Parameters[, 1]), lwd = 4, 
@@ -2011,7 +2110,7 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                           round((iter.num * nb_chains - (burn_in) * 
                             nb_chains)/Thin, 0), ".pdf")
                         pdf(file.pdf_RS, paper = "a4", height = 20)
-                        param = c("S2")
+                        param = "Sensitivity"
                         par(mfcol = c(5, 2))
                         no_chains = length(chain)
                         iter_chain = round((iter.num * nb_chains - 
@@ -2020,14 +2119,15 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                         for (i in 1:rs.length) {
                           plot(x = longueur, y = refstd_Parameters[longueur, 
                             i, 1], type = "n", col = 1, ylab = paste(param, 
-                            " of reference test ", i), xlab = "iteration number", 
+                            " of reference standard ", i), xlab = "iteration number", 
                             main = paste("Thinning interval = ", 
                               thin.interval, "\n Total samplesize kept = ", 
                               (iter.num * nb_chains - (burn_in) * 
                                 nb_chains)/Thin))
                           for (l in 1:length(chain)) {
-                            lines(x = longueur, y = refstd_Parameters[l * 
-                              longueur, i, 1], col = l)
+                            lines(x = longueur, y = refstd_Parameters[longueur + 
+                              (iter_chain * (l - 1)), i, 1], 
+                              col = l)
                           }
                         }
                       }
@@ -2036,13 +2136,13 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                           round((iter.num * nb_chains - (burn_in) * 
                             nb_chains)/Thin, 0), ".pdf")
                         pdf(file.pdf_RS, paper = "a4", height = 20)
-                        param = c("S2")
+                        param = "Sensitivity"
                         par(mfcol = c(5, 2))
                         longueur = 1:long
                         for (i in 1:rs.length) {
                           plot(x = longueur, y = refstd_Parameters[, 
                             i, 1], type = "l", col = "grey", 
-                            ylab = paste(param, " of reference test ", 
+                            ylab = paste(param, " of reference standard ", 
                               i), xlab = "iteration number", 
                             main = paste("Thinning interval = ", 
                               thin.interval, "\n Total samplesize kept = ", 
@@ -2055,7 +2155,7 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                         round((iter.num * nb_chains - (burn_in) * 
                           nb_chains)/Thin, 0), ".pdf")
                       pdf(file.pdf_RS2, paper = "a4", height = 20)
-                      param = c("S2")
+                      param = "Sensitivity"
                       par(mfcol = c(5, 2))
                       longueur = 1:long
                       for (i in 1:rs.length) {
@@ -2090,7 +2190,7 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                           round((iter.num * nb_chains - (burn_in) * 
                             nb_chains)/Thin, 0), ".pdf")
                         pdf(file.pdf_RS, paper = "a4", height = 20)
-                        param = c("S2")
+                        param = "Sensitivity of reference standard"
                         par(mfcol = c(5, 2))
                         no_chains = length(chain)
                         iter_chain = round((iter.num * nb_chains - 
@@ -2103,8 +2203,8 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                             (iter.num * nb_chains - (burn_in) * 
                               nb_chains)/Thin))
                         for (l in 1:length(chain)) {
-                          lines(x = longueur, y = refstd_Parameters[l * 
-                            longueur, 1], col = l)
+                          lines(x = longueur, y = refstd_Parameters[longueur + 
+                            (iter_chain * (l - 1)), 1], col = l)
                         }
                       }
                       else {
@@ -2112,7 +2212,7 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                           round((iter.num * nb_chains - (burn_in) * 
                             nb_chains)/Thin, 0), ".pdf")
                         pdf(file.pdf_RS, paper = "a4", height = 20)
-                        param = c("S2")
+                        param = "Sensitivity of reference standard"
                         par(mfcol = c(5, 2))
                         longueur = 1:long
                         plot(x = longueur, y = refstd_Parameters[, 
@@ -2127,7 +2227,7 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                         round((iter.num * nb_chains - (burn_in) * 
                           nb_chains)/Thin, 0), ".pdf")
                       pdf(file.pdf_RS2, paper = "a4", height = 20)
-                      param = c("S2")
+                      param = "Sensitivity of reference standard"
                       par(mfcol = c(5, 2))
                       longueur = 1:long
                       plot(density(refstd_Parameters[, 1]), lwd = 4, 
@@ -2164,7 +2264,7 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                           round((iter.num * nb_chains - (burn_in) * 
                             nb_chains)/Thin, 0), ".pdf")
                         pdf(file.pdf_RS, paper = "a4", height = 20)
-                        param = c("S2", "C2")
+                        param = c("Sensitivity", "Specificity")
                         par(mfcol = c(5, 2))
                         no_chains = length(chain)
                         iter_chain = round((iter.num * nb_chains - 
@@ -2174,14 +2274,15 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                           for (i in 1:rs.length) {
                             plot(x = longueur, y = refstd_Parameters[longueur, 
                               i, j], type = "n", col = 1, ylab = paste(param[j], 
-                              " of reference test ", i), xlab = "iteration number", 
-                              main = paste("Thinning interval = ", 
+                              " of reference standard ", i), 
+                              xlab = "iteration number", main = paste("Thinning interval = ", 
                                 thin.interval, "\n Total samplesize kept = ", 
                                 (iter.num * nb_chains - (burn_in) * 
                                   nb_chains)/Thin))
                             for (l in 1:length(chain)) {
-                              lines(x = longueur, y = refstd_Parameters[l * 
-                                longueur, i, j], col = l)
+                              lines(x = longueur, y = refstd_Parameters[longueur + 
+                                (iter_chain * (l - 1)), i, j], 
+                                col = l)
                             }
                           }
                         }
@@ -2191,15 +2292,15 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                           round((iter.num * nb_chains - (burn_in) * 
                             nb_chains)/Thin, 0), ".pdf")
                         pdf(file.pdf_RS, paper = "a4", height = 20)
-                        param = c("S2", "C2")
+                        param = c("Sensitivity", "Specificity")
                         par(mfcol = c(5, 2))
                         for (j in 1:2) {
                           longueur = 1:long
                           for (i in 1:rs.length) {
                             plot(x = longueur, y = refstd_Parameters[, 
                               i, j], type = "l", col = "grey", 
-                              ylab = paste(param[j], " of study ", 
-                                sub_rs[[i + 1]]), xlab = "iteration number", 
+                              ylab = paste(param[j], " of reference standard ", 
+                                i), xlab = "iteration number", 
                               main = paste("Thinning interval = ", 
                                 thin.interval, "\n Total samplesize kept = ", 
                                 (iter.num * nb_chains - (burn_in) * 
@@ -2212,14 +2313,14 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                         round((iter.num * nb_chains - (burn_in) * 
                           nb_chains)/Thin, 0), ".pdf")
                       pdf(file.pdf_RS2, paper = "a4", height = 20)
-                      param = c("S2", "C2")
+                      param = c("Sensitivity", "Specificity")
                       par(mfcol = c(5, 2))
                       longueur = 1:long
                       for (j in 1:2) {
                         for (i in 1:rs.length) {
                           plot(density(refstd_Parameters[, i, 
                             j]), lwd = 4, type = "l", col = "grey", 
-                            main = paste(param[j], " of study ", 
+                            main = paste(param[j], " of reference standard ", 
                               i, " \n Thinning interval = ", 
                               thin.interval, "\n Total samplesize kept = ", 
                               (iter.num * nb_chains - (burn_in) * 
@@ -2259,7 +2360,8 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                         iter_chain = round((iter.num * nb_chains - 
                           (burn_in) * nb_chains)/Thin, 0)/no_chains
                         longueur = 1:iter_chain
-                        param = c("S2", "C2")
+                        param = c("Sensitivity of reference standard", 
+                          "Specificity of reference standard")
                         par(mfcol = c(5, 2))
                         for (j in 1:2) {
                           plot(x = longueur, y = refstd_Parameters[longueur, 
@@ -2269,8 +2371,8 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                               (iter.num * nb_chains - (burn_in) * 
                                 nb_chains)/Thin))
                           for (l in 1:length(chain)) {
-                            lines(x = longueur, y = refstd_Parameters[l * 
-                              longueur, j], col = l)
+                            lines(x = longueur, y = refstd_Parameters[longueur + 
+                              (iter_chain * (l - 1)), j], col = l)
                           }
                         }
                       }
@@ -2279,7 +2381,8 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                           round((iter.num * nb_chains - (burn_in) * 
                             nb_chains)/Thin, 0), ".pdf")
                         pdf(file.pdf_RS, paper = "a4", height = 20)
-                        Param = c("S2", "C2")
+                        Param = c("Sensitivity of reference standard", 
+                          "Specificity of reference standard")
                         par(mfcol = c(5, 2))
                         for (j in 1:2) {
                           longueur = 1:long
@@ -2296,16 +2399,17 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                         round((iter.num * nb_chains - (burn_in) * 
                           nb_chains)/Thin, 0), ".pdf")
                       pdf(file.pdf_RS2, paper = "a4", height = 20)
-                      param = c("S2", "C2")
+                      param = c("Sensitivity of reference standard", 
+                        "Specificity of reference standard")
                       par(mfcol = c(5, 2))
                       for (j in 1:2) {
                         longueur = 1:long
                         plot(density(refstd_Parameters[, j]), 
                           lwd = 4, type = "l", col = "grey", 
-                          main = paste(param[j], " of study ", 
-                            j, " \n Thinning interval = ", thin.interval, 
-                            "\n Total samplesize kept = ", (iter.num * 
-                              nb_chains - (burn_in) * nb_chains)/Thin))
+                          main = paste(param[j], " \n Thinning interval = ", 
+                            thin.interval, "\n Total samplesize kept = ", 
+                            (iter.num * nb_chains - (burn_in) * 
+                              nb_chains)/Thin))
                       }
                       dev.off()
                     }
@@ -2349,14 +2453,15 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                       round((iter.num * nb_chains - (burn_in) * 
                         nb_chains)/Thin, 0), ".pdf")
                     pdf(file.pdf_RS, paper = "a4", height = 20)
-                    param = c("S2", "C2", "a1", "a0")
+                    param = c("Sensitivity", "Specificity", "a1", 
+                      "a0")
                     par(mfcol = c(5, 2))
                     for (j in 1:4) {
                       longueur = 1:long
                       for (i in 1:rs.length) {
                         plot(x = longueur, y = refstd_Parameters[, 
                           i, j], type = "l", col = "grey", ylab = paste(param[j], 
-                          " of study ", i), xlab = "iteration number", 
+                          " of reference standard ", i), xlab = "iteration number", 
                           main = paste("Thinning interval = ", 
                             thin.interval, "\n Total samplesize kept = ", 
                             (iter.num * nb_chains - (burn_in) * 
@@ -2376,14 +2481,15 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                       round((iter.num * nb_chains - (burn_in) * 
                         nb_chains)/Thin, 0), ".pdf")
                     pdf(file.pdf_RS2, paper = "a4", height = 20)
-                    param = c("S2", "C2", "a1", "a0")
+                    param = c("Sensitivity", "Specificity", "a1", 
+                      "a0")
                     par(mfcol = c(5, 2))
                     longueur = 1:long
                     for (j in 1:4) {
                       for (i in 1:rs.length) {
                         plot(density(refstd_Parameters[, i, j]), 
                           lwd = 4, type = "l", col = "grey", 
-                          main = paste(param[j], " of study ", 
+                          main = paste(param[j], " of reference standard ", 
                             i, " \n Thinning interval = ", thin.interval, 
                             "\n Total samplesize kept = ", (iter.num * 
                               nb_chains - (burn_in) * nb_chains)/Thin))
@@ -2429,7 +2535,9 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                       round((iter.num * nb_chains - (burn_in) * 
                         nb_chains)/Thin, 0), ".pdf")
                     pdf(file.pdf_RS, paper = "a4", height = 20)
-                    Param = c("S2", "C2", "a1", "a0")
+                    Param = c("Sensitivity of reference standard", 
+                      "Specificity of reference standard", "a1", 
+                      "a0")
                     par(mfcol = c(5, 2))
                     for (j in 1:4) {
                       longueur = 1:long
@@ -2453,16 +2561,17 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                       round((iter.num * nb_chains - (burn_in) * 
                         nb_chains)/Thin, 0), ".pdf")
                     pdf(file.pdf_RS2, paper = "a4", height = 20)
-                    param = c("S2", "C2", "a1", "a0")
+                    param = c("Sensitivity of reference standard", 
+                      "Specificity of reference standard", "a1", 
+                      "a0")
                     par(mfcol = c(5, 2))
                     for (j in 1:4) {
                       longueur = 1:long
                       plot(density(refstd_Parameters[, j]), lwd = 4, 
                         type = "l", col = "grey", main = paste(param[j], 
-                          " of study ", j, " \n Thinning interval = ", 
-                          thin.interval, "\n Total samplesize kept = ", 
-                          (iter.num * nb_chains - (burn_in) * 
-                            nb_chains)/Thin))
+                          " \n Thinning interval = ", thin.interval, 
+                          "\n Total samplesize kept = ", (iter.num * 
+                            nb_chains - (burn_in) * nb_chains)/Thin))
                     }
                     dev.off()
                   }
@@ -2501,9 +2610,10 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
             Parameters[, , 3] <- PI
             Parameters[, , 4] <- S1
             Parameters[, , 5] <- C1
-            parameter = matrix(0, ncol = 4, nrow = 7)
+            parameter = matrix(0, ncol = 4, nrow = 9)
             rownames(parameter) = c("THETA", "LAMBDA", "beta", 
-                "sigma.alpha", "sigma.theta", "S Overall", "C Overall")
+                "sigma.alpha", "sigma.theta", "S Overall", "C Overall", 
+                "S1_new", "C1_new")
             colnames(parameter) = c("True.value", paste(point_estimate, 
                 "estimate"), "HPD.low", "HPD.high")
             parameter[1, 1] <- true.THETA
@@ -2534,10 +2644,19 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
             parameter[7, 2] <- C_overall.est
             parameter[7, 3] <- C_overall.HPD[1]
             parameter[7, 4] <- C_overall.HPD[2]
+            parameter[8, 1] <- S1_new.est
+            parameter[8, 2] <- S1_new.est
+            parameter[8, 3] <- S1_new.HPD[1]
+            parameter[8, 4] <- S1_new.HPD[2]
+            parameter[9, 1] <- C1_new.est
+            parameter[9, 2] <- C1_new.est
+            parameter[9, 3] <- C1_new.HPD[1]
+            parameter[9, 4] <- C1_new.HPD[2]
             long = length(THETA)
-            Parameter = matrix(0, nrow = long, ncol = 7)
+            Parameter = matrix(0, nrow = long, ncol = 9)
             colnames(Parameter) = c("THETA", "LAMBDA", "beta", 
-                "sigma.alpha", "sigma.theta", "S overall", "C overall")
+                "sigma.alpha", "sigma.theta", "S overall", "C overall", 
+                "S1_new", "C1_new")
             Parameter[, 1] <- THETA
             Parameter[, 2] <- LAMBDA
             Parameter[, 3] <- beta
@@ -2545,6 +2664,8 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
             Parameter[, 5] <- sigma.theta
             Parameter[, 6] <- S_overall
             Parameter[, 7] <- C_overall
+            Parameter[, 8] <- S1_new
+            Parameter[, 9] <- C1_new
         }
         else {
             if (SCO == TRUE) {
@@ -2574,9 +2695,10 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                 Parameters[, , 2] <- PI
                 Parameters[, , 3] <- S1
                 Parameters[, , 4] <- C1
-                parameter = matrix(0, ncol = 4, nrow = 6)
+                parameter = matrix(0, ncol = 4, nrow = 8)
                 rownames(parameter) = c("THETA", "LAMBDA", "beta", 
-                  "sigma.alpha", "S Overall", "C Overall")
+                  "sigma.alpha", "S Overall", "C Overall", "S1_new", 
+                  "C1_new")
                 colnames(parameter) = c("True.value", paste(point_estimate, 
                   "estimate"), "HPD.low", "HPD.high")
                 parameter[1, 1] <- true.THETA
@@ -2603,16 +2725,27 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                 parameter[6, 2] <- C_overall.est
                 parameter[6, 3] <- C_overall.HPD[1]
                 parameter[6, 4] <- C_overall.HPD[2]
+                parameter[7, 1] <- S1_new.est
+                parameter[7, 2] <- S1_new.est
+                parameter[7, 3] <- S1_new.HPD[1]
+                parameter[7, 4] <- S1_new.HPD[2]
+                parameter[8, 1] <- C1_new.est
+                parameter[8, 2] <- C1_new.est
+                parameter[8, 3] <- C1_new.HPD[1]
+                parameter[8, 4] <- C1_new.HPD[2]
                 long = length(THETA)
-                Parameter = matrix(0, nrow = long, ncol = 6)
+                Parameter = matrix(0, nrow = long, ncol = 8)
                 colnames(Parameter) = c("THETA", "LAMBDA", "beta", 
-                  "sigma.alpha", "S overall", "C overall")
+                  "sigma.alpha", "S overall", "C overall", "S1_new", 
+                  "C1_new")
                 Parameter[, 1] <- THETA
                 Parameter[, 2] <- LAMBDA
                 Parameter[, 3] <- beta
                 Parameter[, 4] <- sigma.alpha
                 Parameter[, 5] <- S_overall
                 Parameter[, 6] <- C_overall
+                Parameter[, 7] <- S1_new
+                Parameter[, 8] <- C1_new
             }
         }
         if (print_plot == TRUE) {
@@ -2625,7 +2758,7 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                   param = c("theta", "alpha", "PI", "S1", "C1")
                   Param = c("Capital Theta", "Capital Lambda", 
                     "beta", "~sigma[alpha]", "~sigma[theta]", 
-                    "S Overall", "C Overall")
+                    "S Overall", "C Overall", "S1_new", "C1_new")
                   no_chains = length(chain)
                   iter_chain = round((iter.num * nb_chains - 
                     (burn_in) * nb_chains)/Thin, 0)/no_chains
@@ -2654,26 +2787,28 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                             nb_chains)/Thin), ylim = range(range_param[, 
                           j]))
                       for (l in 1:length(chain)) {
-                        lines(x = longueur, y = Parameters[l * 
-                          longueur, i, j], col = l)
+                        lines(x = longueur, y = Parameters[longueur + 
+                          (iter_chain * (l - 1)), i, j], col = l)
                       }
                     }
                   }
                   min_Param = c(min(Parameter[, 1]), min(Parameter[, 
                     2]), min(Parameter[, 3]), min(Parameter[, 
                     4]), min(Parameter[, 5]), min(Parameter[, 
-                    6]), min(Parameter[, 7]))
+                    6]), min(Parameter[, 7]), min(Parameter[, 
+                    8]), min(Parameter[, 9]))
                   max_Param = c(max(Parameter[, 1]), max(Parameter[, 
                     2]), max(Parameter[, 3]), max(Parameter[, 
                     4]), max(Parameter[, 5]), max(Parameter[, 
-                    6]), max(Parameter[, 7]))
+                    6]), max(Parameter[, 7]), max(Parameter[, 
+                    8]), max(Parameter[, 9]))
                   dlag = (max_Param - min_Param)/100
                   range_Param = numeric()
-                  for (j in 1:7) {
+                  for (j in 1:9) {
                     range_Param = cbind(range_Param, seq(min_Param[j] + 
                       dlag[j]/2, max_Param[j] - dlag[j]/2, by = dlag[j]))
                   }
-                  for (j in 1:7) {
+                  for (j in 1:9) {
                     plot(x = longueur, y = Parameter[longueur, 
                       j], type = "n", col = 1, ylab = paste(Param[j]), 
                       xlab = "iteration number", main = paste("Thinning interval = ", 
@@ -2681,8 +2816,8 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                         (iter.num * nb_chains - (burn_in) * nb_chains)/Thin), 
                       ylim = range(range_Param[, j]))
                     for (l in 1:length(chain)) {
-                      lines(x = longueur, y = Parameter[l * longueur, 
-                        j], col = l)
+                      lines(x = longueur, y = Parameter[longueur + 
+                        (iter_chain * (l - 1)), j], col = l)
                     }
                   }
                   dev.off()
@@ -2695,7 +2830,7 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                   param = c("theta", "alpha", "PI", "S1", "C1")
                   Param = c("Capital Theta", "Capital Lambda", 
                     "beta", "~sigma[alpha]", "~sigma[theta]", 
-                    "S Overall", "C Overall")
+                    "S Overall", "C Overall", "S1_new", "C1_new")
                   min_param = c(min(Parameters[, , 1]), min(Parameters[, 
                     , 2]), min(Parameters[, , 3]), min(Parameters[, 
                     , 4]), min(Parameters[, , 5]))
@@ -2729,18 +2864,20 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                   min_Param = c(min(Parameter[, 1]), min(Parameter[, 
                     2]), min(Parameter[, 3]), min(Parameter[, 
                     4]), min(Parameter[, 5]), min(Parameter[, 
-                    6]), min(Parameter[, 7]))
+                    6]), min(Parameter[, 7]), min(Parameter[, 
+                    8]), min(Parameter[, 9]))
                   max_Param = c(max(Parameter[, 1]), max(Parameter[, 
                     2]), max(Parameter[, 3]), max(Parameter[, 
                     4]), max(Parameter[, 5]), max(Parameter[, 
-                    6]), max(Parameter[, 7]))
+                    6]), max(Parameter[, 7]), max(Parameter[, 
+                    8]), max(Parameter[, 9]))
                   dlag = (max_Param - min_Param)/100
                   range_Param = numeric()
-                  for (j in 1:7) {
+                  for (j in 1:9) {
                     range_Param = cbind(range_Param, seq(min_Param[j] + 
                       dlag[j]/2, max_Param[j] - dlag[j]/2, by = dlag[j]))
                   }
-                  for (j in 1:7) {
+                  for (j in 1:9) {
                     plot(x = longueur, y = Parameter[, j], type = "l", 
                       col = "grey", ylab = paste(Param[j]), xlab = "iteration number", 
                       main = paste("Thinning interval = ", thin.interval, 
@@ -2761,7 +2898,7 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                 param = c("theta", "alpha", "PI", "S1", "C1")
                 Param = c("Capital Theta", "Capital Lambda", 
                   "beta", "~sigma[alpha]", "~sigma[theta]", "S Overall", 
-                  "C Overall")
+                  "C Overall", "S1_new", "C1_new")
                 par(mfcol = c(5, 2))
                 longueur = 1:long
                 for (j in 1:5) {
@@ -2773,7 +2910,7 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                         (iter.num * nb_chains - (burn_in) * nb_chains)/Thin))
                   }
                 }
-                for (j in 1:7) {
+                for (j in 1:9) {
                   plot(density(Parameter[, j]), lwd = 4, type = "l", 
                     col = "grey", main = paste(Param[j], " \n Thinning interval = ", 
                       thin.interval, "\n Total samplesize kept = ", 
@@ -2824,7 +2961,8 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                     pdf(file.pdf5, paper = "a4", height = 20)
                     param = c("alpha", "PI", "S1", "C1")
                     Param = c("Capital Theta", "Capital Lambda", 
-                      "beta", "~sigma[alpha]", "S Overall", "C Overall")
+                      "beta", "~sigma[alpha]", "S Overall", "C Overall", 
+                      "S1_new", "C1_new")
                     no_chains = length(chain)
                     iter_chain = round((iter.num * nb_chains - 
                       (burn_in) * nb_chains)/Thin, 0)/no_chains
@@ -2854,27 +2992,29 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                               nb_chains)/Thin), ylim = range(range_param[, 
                             j]))
                         for (l in 1:length(chain)) {
-                          lines(x = longueur, y = Parameters[l * 
-                            longueur, i, j], col = l)
+                          lines(x = longueur, y = Parameters[longueur + 
+                            (iter_chain * (l - 1)), i, j], col = l)
                         }
                       }
                     }
                     min_Param = c(min(Parameter[, 1]), min(Parameter[, 
                       2]), min(Parameter[, 3]), min(Parameter[, 
                       4]), min(Parameter[, 5]), min(Parameter[, 
-                      6]))
+                      6]), min(Parameter[, 7]), min(Parameter[, 
+                      8]))
                     max_Param = c(max(Parameter[, 1]), max(Parameter[, 
                       2]), max(Parameter[, 3]), max(Parameter[, 
                       4]), max(Parameter[, 5]), max(Parameter[, 
-                      6]))
+                      6]), max(Parameter[, 7]), max(Parameter[, 
+                      8]))
                     dlag = (max_Param - min_Param)/100
                     range_Param = numeric()
-                    for (j in 1:6) {
+                    for (j in 1:8) {
                       range_Param = cbind(range_Param, seq(min_Param[j] + 
                         dlag[j]/2, max_Param[j] - dlag[j]/2, 
                         by = dlag[j]))
                     }
-                    for (j in 1:6) {
+                    for (j in 1:8) {
                       plot(x = longueur, y = Parameter[longueur, 
                         j], type = "n", col = 1, ylab = paste(Param[j]), 
                         xlab = "iteration number", main = paste("Thinning interval = ", 
@@ -2883,8 +3023,8 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                             nb_chains)/Thin), ylim = range(range_Param[, 
                           j]))
                       for (l in 1:length(chain)) {
-                        lines(x = longueur, y = Parameter[l * 
-                          longueur, j], col = l)
+                        lines(x = longueur, y = Parameter[longueur + 
+                          (iter_chain * (l - 1)), j], col = l)
                       }
                     }
                     dev.off()
@@ -2896,7 +3036,8 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                     pdf(file.pdf2, paper = "a4", height = 20)
                     param = c("alpha", "PI", "S1", "C1")
                     Param = c("Capital Theta", "Capital Lambda", 
-                      "beta", "~sigma[alpha]", "S Overall", "C Overall")
+                      "beta", "~sigma[alpha]", "S Overall", "C Overall", 
+                      "S1_new", "C1_new")
                     min_param = c(min(Parameters[, , 1]), min(Parameters[, 
                       , 2]), min(Parameters[, , 3]), min(Parameters[, 
                       , 4]))
@@ -2931,19 +3072,21 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                     min_Param = c(min(Parameter[, 1]), min(Parameter[, 
                       2]), min(Parameter[, 3]), min(Parameter[, 
                       4]), min(Parameter[, 5]), min(Parameter[, 
-                      6]))
+                      6]), min(Parameter[, 7]), min(Parameter[, 
+                      8]))
                     max_Param = c(max(Parameter[, 1]), max(Parameter[, 
                       2]), max(Parameter[, 3]), max(Parameter[, 
                       4]), max(Parameter[, 5]), max(Parameter[, 
-                      6]))
+                      6]), max(Parameter[, 7]), max(Parameter[, 
+                      8]))
                     dlag = (max_Param - min_Param)/100
                     range_Param = numeric()
-                    for (j in 1:6) {
+                    for (j in 1:8) {
                       range_Param = cbind(range_Param, seq(min_Param[j] + 
                         dlag[j]/2, max_Param[j] - dlag[j]/2, 
                         by = dlag[j]))
                     }
-                    for (j in 1:6) {
+                    for (j in 1:8) {
                       plot(x = longueur, y = Parameter[, j], 
                         type = "l", col = "grey", ylab = paste(Param[j]), 
                         xlab = "iteration number", main = paste("Thinning interval = ", 
@@ -2964,7 +3107,8 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                   pdf(file.pdf3, paper = "a4", height = 20)
                   param = c("alpha", "PI", "S1", "C1")
                   Param = c("Capital Theta", "Capital Lambda", 
-                    "beta", "~sigma[alpha]", "S Overall", "C Overall")
+                    "beta", "~sigma[alpha]", "S Overall", "C Overall", 
+                    "S1_new", "C1_new")
                   par(mfcol = c(5, 2))
                   longueur = 1:long
                   for (j in 1:4) {
@@ -2977,7 +3121,7 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                             nb_chains)/Thin))
                     }
                   }
-                  for (j in 1:6) {
+                  for (j in 1:8) {
                     plot(density(Parameter[, j]), lwd = 4, type = "l", 
                       col = "grey", main = paste(Param[j], " \n Thinning interval = ", 
                         thin.interval, "\n Total samplesize kept = ", 
@@ -3101,12 +3245,45 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
             write(paste("Prior of LAMBDA is Uniform(", prior.LAMBDA.lower, 
                 ",", prior.LAMBDA.upper, ")"), file = test.file, 
                 append = TRUE)
-            write(paste("Prior of sigma_alpha is uniform(", l.disp.alpha, 
-                ",", u.disp.alpha, ")"), file = test.file, append = TRUE)
-            if (SCO == FALSE) {
-                write(paste("Prior of sigma_theta is uniform(", 
-                  l.disp.theta, ",", u.disp.theta, ")"), file = test.file, 
+            if (prior_sig_a == 1) {
+                write(paste("Prior of sigma_alpha is uniform(", 
+                  l.disp.alpha, ",", u.disp.alpha, ")"), file = test.file, 
                   append = TRUE)
+            }
+            else {
+                if (prior_sig_a == 2) {
+                  write(paste("Prior of sigma_alpha^2 is uniform(", 
+                    l.disp.alpha, ",", u.disp.alpha, ")"), file = test.file, 
+                    append = TRUE)
+                }
+                else {
+                  if (prior_sig_a == 3) {
+                    write(paste("Prior of precision of sigma_alpha is gamma(", 
+                      l.disp.alpha, ",", u.disp.alpha, ")"), 
+                      file = test.file, append = TRUE)
+                  }
+                }
+            }
+            if (SCO == FALSE) {
+                if (prior_sig_t == 1) {
+                  write(paste("Prior of sigma_theta is uniform(", 
+                    l.disp.theta, ",", u.disp.theta, ")"), file = test.file, 
+                    append = TRUE)
+                }
+                else {
+                  if (prior_sig_t == 2) {
+                    write(paste("Prior of sigma_theta^2 is uniform(", 
+                      l.disp.theta, ",", u.disp.theta, ")"), 
+                      file = test.file, append = TRUE)
+                  }
+                  else {
+                    if (prior_sig_t == 3) {
+                      write(paste("Prior of precision of sigma_theta is gamma(", 
+                        l.disp.theta, ",", u.disp.theta, ")"), 
+                        file = test.file, append = TRUE)
+                    }
+                  }
+                }
             }
             if (condInd == TRUE & Gold_Std == FALSE & model == 
                 1) {
@@ -3739,6 +3916,36 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                   round(C1.HPD[i, 1], digits = digit), "", round(C1.HPD[i, 
                     2], digits = digit)), file = test.file, append = TRUE)
             }
+            write(paste("______________________________________________________"), 
+                file = test.file, append = TRUE)
+            write(paste("\tPosterior predictive value of Sensitivity of test under evaluation (S1) \t "), 
+                file = test.file, append = TRUE)
+            write(paste("______________________________________________________"), 
+                file = test.file, append = TRUE)
+            write(paste(""), file = test.file, append = TRUE)
+            write(paste("         Estimate Standard_Dev MC_error C.I._lower C.I._upper"), 
+                file = test.file, append = TRUE)
+            write(paste(""), file = test.file, append = TRUE)
+            write(paste("Sensitivity ", round(S1_new.est, digits = digit), 
+                "", round(S1_new.sd, digits = digit), "", round(S1_new.MCerror, 
+                  digits = digit), "", round(S1_new.HPD[1], digits = digit), 
+                "", round(S1_new.HPD[2], digits = digit)), file = test.file, 
+                append = TRUE)
+            write(paste("______________________________________________________"), 
+                file = test.file, append = TRUE)
+            write(paste("\tPosterior predictive value of Specificity of test under evaluation (C1) \t "), 
+                file = test.file, append = TRUE)
+            write(paste("______________________________________________________"), 
+                file = test.file, append = TRUE)
+            write(paste(""), file = test.file, append = TRUE)
+            write(paste("         Estimate Standard_Dev MC_error C.I._lower C.I._upper"), 
+                file = test.file, append = TRUE)
+            write(paste(""), file = test.file, append = TRUE)
+            write(paste("Specificity", round(C1_new.est, digits = digit), 
+                "", round(C1_new.sd, digits = digit), "", round(C1_new.MCerror, 
+                  digits = digit), "", round(C1_new.HPD[1], digits = digit), 
+                "", round(C1_new.HPD[2], digits = digit)), file = test.file, 
+                append = TRUE)
             Num_study = c()
             for (i in 1:N) {
                 Num_study = c(Num_study, paste("Study", i))
@@ -3764,7 +3971,7 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                           round((iter.num * nb_chains - (burn_in) * 
                             nb_chains)/Thin, 0), ".pdf")
                         pdf(file.pdf_RS, paper = "a4", height = 20)
-                        param = "C2"
+                        param = "Specificity"
                         par(mfcol = c(5, 2))
                         no_chains = length(chain)
                         iter_chain = round((iter.num * nb_chains - 
@@ -3773,14 +3980,15 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                         for (i in 1:rs.length) {
                           plot(x = longueur, y = refstd_Parameters[longueur, 
                             i, 1], type = "n", col = 1, ylab = paste(param, 
-                            " of reference test ", i), xlab = "iteration number", 
+                            " of reference standard ", i), xlab = "iteration number", 
                             main = paste("Thinning interval = ", 
                               thin.interval, "\n Total samplesize kept = ", 
                               (iter.num * nb_chains - (burn_in) * 
                                 nb_chains)/Thin))
                           for (l in 1:length(chain)) {
-                            lines(x = longueur, y = refstd_Parameters[l * 
-                              longueur, i, 1], col = l)
+                            lines(x = longueur, y = refstd_Parameters[longueur + 
+                              (iter_chain * (l - 1)), i, 1], 
+                              col = l)
                           }
                         }
                       }
@@ -3789,13 +3997,13 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                           round((iter.num * nb_chains - (burn_in) * 
                             nb_chains)/Thin, 0), ".pdf")
                         pdf(file.pdf_RS, paper = "a4", height = 20)
-                        param = "C2"
+                        param = "Specificity"
                         par(mfcol = c(5, 2))
                         longueur = 1:long
                         for (i in 1:rs.length) {
                           plot(x = longueur, y = refstd_Parameters[, 
                             i, 1], type = "l", col = "grey", 
-                            ylab = paste(param, " of study ", 
+                            ylab = paste(param, " of reference standard ", 
                               i), xlab = "iteration number", 
                             main = paste("Thinning interval = ", 
                               thin.interval, "\n Total samplesize kept = ", 
@@ -3808,14 +4016,14 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                         round((iter.num * nb_chains - (burn_in) * 
                           nb_chains)/Thin, 0), ".pdf")
                       pdf(file.pdf_RS2, paper = "a4", height = 20)
-                      param = "C2"
+                      param = "Specificity"
                       par(mfcol = c(5, 2))
                       longueur = 1:long
                       for (i in 1:rs.length) {
                         plot(density(refstd_Parameters[, i, 1]), 
                           lwd = 4, type = "l", col = "grey", 
-                          main = paste(param, " of study ", i, 
-                            " \n Thinning interval = ", thin.interval, 
+                          main = paste(param, " of reference standard ", 
+                            i, " \n Thinning interval = ", thin.interval, 
                             "\n Total samplesize kept = ", (iter.num * 
                               nb_chains - (burn_in) * nb_chains)/Thin))
                       }
@@ -3841,7 +4049,7 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                           round((iter.num * nb_chains - (burn_in) * 
                             nb_chains)/Thin, 0), ".pdf")
                         pdf(file.pdf_RS, paper = "a4", height = 20)
-                        param = c("C2")
+                        param = c("Specificity of reference standard")
                         par(mfcol = c(5, 2))
                         no_chains = length(chain)
                         iter_chain = round((iter.num * nb_chains - 
@@ -3854,8 +4062,8 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                             (iter.num * nb_chains - (burn_in) * 
                               nb_chains)/Thin))
                         for (l in 1:length(chain)) {
-                          lines(x = longueur, y = refstd_Parameters[l * 
-                            longueur, 1], col = l)
+                          lines(x = longueur, y = refstd_Parameters[longueur + 
+                            (iter_chain * (l - 1)), 1], col = l)
                         }
                       }
                       else {
@@ -3863,7 +4071,7 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                           round((iter.num * nb_chains - (burn_in) * 
                             nb_chains)/Thin, 0), ".pdf")
                         pdf(file.pdf_RS, paper = "a4", height = 20)
-                        param = c("C2")
+                        param = c("Specificity of reference standard")
                         par(mfcol = c(5, 2))
                         longueur = 1:long
                         plot(x = longueur, y = refstd_Parameters[, 
@@ -3878,7 +4086,7 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                         round((iter.num * nb_chains - (burn_in) * 
                           nb_chains)/Thin, 0), ".pdf")
                       pdf(file.pdf_RS2, paper = "a4", height = 20)
-                      param = c("C2")
+                      param = c("Specificity")
                       par(mfcol = c(5, 2))
                       longueur = 1:long
                       plot(density(refstd_Parameters[, 1]), lwd = 4, 
@@ -3911,7 +4119,7 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                             round((iter.num * nb_chains - (burn_in) * 
                               nb_chains)/Thin, 0), ".pdf")
                           pdf(file.pdf_RS, paper = "a4", height = 20)
-                          param = c("S2")
+                          param = c("Sensitivity")
                           par(mfcol = c(5, 2))
                           no_chains = length(chain)
                           iter_chain = round((iter.num * nb_chains - 
@@ -3920,14 +4128,15 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                           for (i in 1:rs.length) {
                             plot(x = longueur, y = refstd_Parameters[longueur, 
                               i, 1], type = "n", col = 1, ylab = paste(param, 
-                              " of reference test ", i), xlab = "iteration number", 
-                              main = paste("Thinning interval = ", 
+                              " of reference standard ", i), 
+                              xlab = "iteration number", main = paste("Thinning interval = ", 
                                 thin.interval, "\n Total samplesize kept = ", 
                                 (iter.num * nb_chains - (burn_in) * 
                                   nb_chains)/Thin))
                             for (l in 1:length(chain)) {
-                              lines(x = longueur, y = refstd_Parameters[l * 
-                                longueur, i, 1], col = l)
+                              lines(x = longueur, y = refstd_Parameters[longueur + 
+                                (iter_chain * (l - 1)), i, 1], 
+                                col = l)
                             }
                           }
                         }
@@ -3936,13 +4145,13 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                             round((iter.num * nb_chains - (burn_in) * 
                               nb_chains)/Thin, 0), ".pdf")
                           pdf(file.pdf_RS, paper = "a4", height = 20)
-                          param = c("S2")
+                          param = c("Sensitivity")
                           par(mfcol = c(5, 2))
                           longueur = 1:long
                           for (i in 1:rs.length) {
                             plot(x = longueur, y = refstd_Parameters[, 
                               i, 1], type = "l", col = "grey", 
-                              ylab = paste(param, " of reference test ", 
+                              ylab = paste(param, " of reference standard ", 
                                 i), xlab = "iteration number", 
                               main = paste("Thinning interval = ", 
                                 thin.interval, "\n Total samplesize kept = ", 
@@ -3955,7 +4164,7 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                           round((iter.num * nb_chains - (burn_in) * 
                             nb_chains)/Thin, 0), ".pdf")
                         pdf(file.pdf_RS2, paper = "a4", height = 20)
-                        param = c("S2")
+                        param = c("Sensitivity")
                         par(mfcol = c(5, 2))
                         longueur = 1:long
                         for (i in 1:rs.length) {
@@ -3990,7 +4199,7 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                             round((iter.num * nb_chains - (burn_in) * 
                               nb_chains)/Thin, 0), ".pdf")
                           pdf(file.pdf_RS, paper = "a4", height = 20)
-                          param = c("S2")
+                          param = c("Sensitivity of reference standard")
                           par(mfcol = c(5, 2))
                           no_chains = length(chain)
                           iter_chain = round((iter.num * nb_chains - 
@@ -4003,8 +4212,8 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                               (iter.num * nb_chains - (burn_in) * 
                                 nb_chains)/Thin))
                           for (l in 1:length(chain)) {
-                            lines(x = longueur, y = refstd_Parameters[l * 
-                              longueur, 1], col = l)
+                            lines(x = longueur, y = refstd_Parameters[longueur + 
+                              (iter_chain * (l - 1)), 1], col = l)
                           }
                         }
                         else {
@@ -4012,7 +4221,7 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                             round((iter.num * nb_chains - (burn_in) * 
                               nb_chains)/Thin, 0), ".pdf")
                           pdf(file.pdf_RS, paper = "a4", height = 20)
-                          param = c("S2")
+                          param = c("Sensitivity of reference standard")
                           par(mfcol = c(5, 2))
                           longueur = 1:long
                           plot(x = longueur, y = refstd_Parameters[, 
@@ -4027,7 +4236,7 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                           round((iter.num * nb_chains - (burn_in) * 
                             nb_chains)/Thin, 0), ".pdf")
                         pdf(file.pdf_RS2, paper = "a4", height = 20)
-                        param = c("S2")
+                        param = c("Sensitivity of reference standard")
                         par(mfcol = c(5, 2))
                         longueur = 1:long
                         plot(density(refstd_Parameters[, 1]), 
@@ -4063,7 +4272,7 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                             round((iter.num * nb_chains - (burn_in) * 
                               nb_chains)/Thin, 0), ".pdf")
                           pdf(file.pdf_RS, paper = "a4", height = 20)
-                          param = c("S2", "C2")
+                          param = c("Sensitivity", "Specificity")
                           par(mfcol = c(5, 2))
                           no_chains = length(chain)
                           iter_chain = round((iter.num * nb_chains - 
@@ -4073,14 +4282,15 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                             for (i in 1:rs.length) {
                               plot(x = longueur, y = refstd_Parameters[longueur, 
                                 i, j], type = "n", col = 1, ylab = paste(param[j], 
-                                " of reference test ", i), xlab = "iteration number", 
-                                main = paste("Thinning interval = ", 
+                                " of reference standard ", i), 
+                                xlab = "iteration number", main = paste("Thinning interval = ", 
                                   thin.interval, "\n Total samplesize kept = ", 
                                   (iter.num * nb_chains - (burn_in) * 
                                     nb_chains)/Thin))
                               for (l in 1:length(chain)) {
-                                lines(x = longueur, y = refstd_Parameters[l * 
-                                  longueur, i, j], col = l)
+                                lines(x = longueur, y = refstd_Parameters[longueur + 
+                                  (iter_chain * (l - 1)), i, 
+                                  j], col = l)
                               }
                             }
                           }
@@ -4090,14 +4300,14 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                             round((iter.num * nb_chains - (burn_in) * 
                               nb_chains)/Thin, 0), ".pdf")
                           pdf(file.pdf_RS, paper = "a4", height = 20)
-                          param = c("S2", "C2")
+                          param = c("Sensitivity", "Specificity")
                           par(mfcol = c(5, 2))
                           longueur = 1:long
                           for (j in 1:2) {
                             for (i in 1:rs.length) {
                               plot(x = longueur, y = refstd_Parameters[, 
                                 i, j], type = "l", col = "grey", 
-                                ylab = paste(param[j], " of reference test ", 
+                                ylab = paste(param[j], " of reference standard ", 
                                   i), xlab = "iteration number", 
                                 main = paste("Thinning interval = ", 
                                   thin.interval, "\n Total samplesize kept = ", 
@@ -4111,14 +4321,14 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                           round((iter.num * nb_chains - (burn_in) * 
                             nb_chains)/Thin, 0), ".pdf")
                         pdf(file.pdf_RS2, paper = "a4", height = 20)
-                        param = c("S2", "C2")
+                        param = c("Sensitivity", "Specificity")
                         par(mfcol = c(5, 2))
                         longueur = 1:long
                         for (j in 1:2) {
                           for (i in 1:rs.length) {
                             plot(density(refstd_Parameters[, 
                               i, j]), lwd = 4, type = "l", col = "grey", 
-                              main = paste(param[j], " of study ", 
+                              main = paste(param[j], " of reference standard ", 
                                 i, " \n Thinning interval = ", 
                                 thin.interval, "\n Total samplesize kept = ", 
                                 (iter.num * nb_chains - (burn_in) * 
@@ -4152,7 +4362,8 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                             round((iter.num * nb_chains - (burn_in) * 
                               nb_chains)/Thin, 0), ".pdf")
                           pdf(file.pdf_RS, paper = "a4", height = 20)
-                          param = c("S2", "C2")
+                          param = c("Sensitivity of reference standard", 
+                            "Specificity of reference standard")
                           par(mfcol = c(5, 2))
                           no_chains = length(chain)
                           iter_chain = round((iter.num * nb_chains - 
@@ -4166,8 +4377,8 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                                 (iter.num * nb_chains - (burn_in) * 
                                   nb_chains)/Thin))
                             for (l in 1:length(chain)) {
-                              lines(x = longueur, y = refstd_Parameters[l * 
-                                longueur, j], col = l)
+                              lines(x = longueur, y = refstd_Parameters[longueur + 
+                                (iter_chain * (l - 1)), j], col = l)
                             }
                           }
                         }
@@ -4176,7 +4387,8 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                             round((iter.num * nb_chains - (burn_in) * 
                               nb_chains)/Thin, 0), ".pdf")
                           pdf(file.pdf_RS, paper = "a4", height = 20)
-                          param = c("S2", "C2")
+                          param = c("Sensitivity of reference standard", 
+                            "Specificity of reference standard")
                           par(mfcol = c(5, 2))
                           longueur = 1:long
                           for (j in 1:2) {
@@ -4193,7 +4405,8 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                           round((iter.num * nb_chains - (burn_in) * 
                             nb_chains)/Thin, 0), ".pdf")
                         pdf(file.pdf_RS2, paper = "a4", height = 20)
-                        param = c("S2", "C2")
+                        param = c("Sensitivity of reference standard", 
+                          "Specificity of reference standard")
                         par(mfcol = c(5, 2))
                         for (j in 1:2) {
                           longueur = 1:long
@@ -4242,14 +4455,15 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                         round((iter.num * nb_chains - (burn_in) * 
                           nb_chains)/Thin, 0), ".pdf")
                       pdf(file.pdf_RS, paper = "a4", height = 20)
-                      param = c("S2", "C2", "a1", "a0")
+                      param = c("Sensitivity", "Specificity", 
+                        "a1", "a0")
                       par(mfcol = c(5, 2))
                       for (j in 1:4) {
                         longueur = 1:long
                         for (i in 1:rs.length) {
                           plot(x = longueur, y = refstd_Parameters[, 
                             i, j], type = "l", col = "grey", 
-                            ylab = paste(param[j], " of study ", 
+                            ylab = paste(param[j], " of reference standard ", 
                               i), xlab = "iteration number", 
                             main = paste("Thinning interval = ", 
                               thin.interval, "\n Total samplesize kept = ", 
@@ -4266,14 +4480,15 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                         round((iter.num * nb_chains - (burn_in) * 
                           nb_chains)/Thin, 0), ".pdf")
                       pdf(file.pdf_RS2, paper = "a4", height = 20)
-                      param = c("S2", "C2", "a1", "a0")
+                      param = c("Sensitivity", "Specificity", 
+                        "a1", "a0")
                       par(mfcol = c(5, 2))
                       longueur = 1:long
                       for (j in 1:4) {
                         for (i in 1:rs.length) {
                           plot(density(refstd_Parameters[, i, 
                             j]), lwd = 4, type = "l", col = "grey", 
-                            main = paste(param[j], " of study ", 
+                            main = paste(param[j], " of reference standard ", 
                               i, " \n Thinning interval = ", 
                               thin.interval, "\n Total samplesize kept = ", 
                               (iter.num * nb_chains - (burn_in) * 
@@ -4315,7 +4530,9 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                         round((iter.num * nb_chains - (burn_in) * 
                           nb_chains)/Thin, 0), ".pdf")
                       pdf(file.pdf_RS, paper = "a4", height = 20)
-                      Param = c("S2", "C2", "a1", "a0")
+                      Param = c("Sensitivity of reference standard", 
+                        "Specificity of reference standard", 
+                        "a1", "a0")
                       par(mfcol = c(5, 2))
                       for (j in 1:4) {
                         longueur = 1:long
@@ -4335,13 +4552,14 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                         round((iter.num * nb_chains - (burn_in) * 
                           nb_chains)/Thin, 0), ".pdf")
                       pdf(file.pdf_RS2, paper = "a4", height = 20)
-                      param = c("S2", "C2", "a1", "a0")
+                      param = c("Sensitivity", "Specificity", 
+                        "a1", "a0")
                       par(mfcol = c(5, 2))
                       for (j in 1:4) {
                         longueur = 1:long
                         plot(density(refstd_Parameters[, j]), 
                           lwd = 4, type = "l", col = "grey", 
-                          main = paste(param[j], " of study ", 
+                          main = paste(param[j], " of reference standard ", 
                             j, " \n Thinning interval = ", thin.interval, 
                             "\n Total samplesize kept = ", (iter.num * 
                               nb_chains - (burn_in) * nb_chains)/Thin))
@@ -4378,10 +4596,10 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                 Parameters[, , 3] <- PI
                 Parameters[, , 4] <- S1
                 Parameters[, , 5] <- C1
-                parameter = matrix(0, ncol = 3, nrow = 7)
+                parameter = matrix(0, ncol = 3, nrow = 9)
                 rownames(parameter) = c("THETA", "LAMBDA", "beta", 
                   "sigma.alpha", "sigma.theta", "S Overall", 
-                  "C Overall")
+                  "C Overall", "S1_new", "C1_new")
                 colnames(parameter) = c(paste(point_estimate, 
                   "estimate"), "HPD.low", "HPD.high")
                 parameter[1, 1] <- THETA.est
@@ -4405,11 +4623,17 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                 parameter[7, 1] <- C_overall.est
                 parameter[7, 2] <- C_overall.HPD[1]
                 parameter[7, 3] <- C_overall.HPD[2]
+                parameter[8, 1] <- S1_new.est
+                parameter[8, 2] <- S1_new.HPD[1]
+                parameter[8, 3] <- S1_new.HPD[2]
+                parameter[9, 1] <- C1_new.est
+                parameter[9, 2] <- C1_new.HPD[1]
+                parameter[8, 3] <- C1_new.HPD[2]
                 long = length(THETA)
-                Parameter = matrix(0, nrow = long, ncol = 7)
+                Parameter = matrix(0, nrow = long, ncol = 9)
                 colnames(Parameter) = c("THETA", "LAMBDA", "beta", 
                   "sigma.alpha", "sigma.theta", "S Overall", 
-                  "C Overall")
+                  "C Overall", "S1_new", "C1_new")
                 Parameter[, 1] <- THETA
                 Parameter[, 2] <- LAMBDA
                 Parameter[, 3] <- beta
@@ -4417,6 +4641,8 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                 Parameter[, 5] <- sigma.theta
                 Parameter[, 6] <- S_overall
                 Parameter[, 7] <- C_overall
+                Parameter[, 8] <- S1_new
+                Parameter[, 9] <- C1_new
             }
             else {
                 if (SCO == TRUE) {
@@ -4441,9 +4667,10 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                   Parameters[, , 2] <- PI
                   Parameters[, , 3] <- S1
                   Parameters[, , 4] <- C1
-                  parameter = matrix(0, ncol = 3, nrow = 6)
+                  parameter = matrix(0, ncol = 3, nrow = 8)
                   rownames(parameter) = c("THETA", "LAMBDA", 
-                    "beta", "sigma.alpha", "S Overall", "C Overall")
+                    "beta", "sigma.alpha", "S Overall", "C Overall", 
+                    "S1_new", "C1_new")
                   colnames(parameter) = c(paste(point_estimate, 
                     "estimate"), "HPD.low", "HPD.high")
                   parameter[1, 1] <- THETA.est
@@ -4464,16 +4691,25 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                   parameter[6, 1] <- C_overall.est
                   parameter[6, 2] <- C_overall.HPD[1]
                   parameter[6, 3] <- C_overall.HPD[2]
+                  parameter[7, 1] <- S1_new.est
+                  parameter[7, 2] <- S1_new.HPD[1]
+                  parameter[7, 3] <- S1_new.HPD[2]
+                  parameter[8, 1] <- C1_new.est
+                  parameter[8, 2] <- C1_new.HPD[1]
+                  parameter[8, 3] <- C1_new.HPD[2]
                   long = length(THETA)
-                  Parameter = matrix(0, nrow = long, ncol = 6)
+                  Parameter = matrix(0, nrow = long, ncol = 8)
                   colnames(Parameter) = c("THETA", "LAMBDA", 
-                    "beta", "sigma.alpha", "S Overall", "C Overall")
+                    "beta", "sigma.alpha", "S Overall", "C Overall", 
+                    "S1_new", "C1_new")
                   Parameter[, 1] <- THETA
                   Parameter[, 2] <- LAMBDA
                   Parameter[, 3] <- beta
                   Parameter[, 4] <- sigma.alpha
                   Parameter[, 5] <- S_overall
                   Parameter[, 6] <- C_overall
+                  Parameter[, 7] <- S1_new
+                  Parameter[, 8] <- C1_new
                 }
             }
             if (print_plot == TRUE) {
@@ -4486,7 +4722,7 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                     param = c("theta", "alpha", "PI", "S1", "C1")
                     Param = c("Capital Theta", "Capital Lambda", 
                       "beta", "~sigma[alpha]", "~sigma[theta]", 
-                      "S Overall", "C Overall")
+                      "S Overall", "C Overall", "S1_new", "C1_new")
                     no_chains = length(chain)
                     iter_chain = round((iter.num * nb_chains - 
                       (burn_in) * nb_chains)/Thin, 0)/no_chains
@@ -4516,27 +4752,29 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                               nb_chains)/Thin), ylim = range(range_param[, 
                             j]))
                         for (l in 1:length(chain)) {
-                          lines(x = longueur, y = Parameters[l * 
-                            longueur, i, j], col = l)
+                          lines(x = longueur, y = Parameters[longueur + 
+                            (iter_chain * (l - 1)), i, j], col = l)
                         }
                       }
                     }
                     min_Param = c(min(Parameter[, 1]), min(Parameter[, 
                       2]), min(Parameter[, 3]), min(Parameter[, 
                       4]), min(Parameter[, 5]), min(Parameter[, 
-                      6]), min(Parameter[, 7]))
+                      6]), min(Parameter[, 7]), min(Parameter[, 
+                      8]), min(Parameter[, 9]))
                     max_Param = c(max(Parameter[, 1]), max(Parameter[, 
                       2]), max(Parameter[, 3]), max(Parameter[, 
                       4]), max(Parameter[, 5]), max(Parameter[, 
-                      6]), max(Parameter[, 7]))
+                      6]), max(Parameter[, 7]), max(Parameter[, 
+                      8]), max(Parameter[, 9]))
                     dlag = (max_Param - min_Param)/100
                     range_Param = numeric()
-                    for (j in 1:7) {
+                    for (j in 1:9) {
                       range_Param = cbind(range_Param, seq(min_Param[j] + 
                         dlag[j]/2, max_Param[j] - dlag[j]/2, 
                         by = dlag[j]))
                     }
-                    for (j in 1:7) {
+                    for (j in 1:9) {
                       plot(x = longueur, y = Parameter[longueur, 
                         j], type = "n", col = 1, ylab = paste(Param[j]), 
                         xlab = "iteration number", main = paste("Thinning interval = ", 
@@ -4545,8 +4783,8 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                             nb_chains)/Thin), ylim = range(range_Param[, 
                           j]))
                       for (l in 1:length(chain)) {
-                        lines(x = longueur, y = Parameter[l * 
-                          longueur, j], col = l)
+                        lines(x = longueur, y = Parameter[longueur + 
+                          (iter_chain * (l - 1)), j], col = l)
                       }
                     }
                     dev.off()
@@ -4559,13 +4797,15 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                     param = c("theta", "alpha", "PI", "S1", "C1")
                     Param = c("Capital Theta", "Capital Lambda", 
                       "beta", "~sigma[alpha]", "~sigma[theta]", 
-                      "S Overall", "C Overall")
+                      "S Overall", "C Overall", "S1_new", "C1_new")
                     min_param = c(min(Parameters[, , 1]), min(Parameters[, 
                       , 2]), min(Parameters[, , 3]), min(Parameters[, 
-                      , 4]), min(Parameters[, , 5]))
+                      , 4]), min(Parameters[, , 5]), min(Parameters[, 
+                      , 6]), min(Parameters[, , 7]))
                     max_param = c(max(Parameters[, , 1]), max(Parameters[, 
                       , 2]), max(Parameters[, , 3]), max(Parameters[, 
-                      , 4]), max(Parameters[, , 5]))
+                      , 4]), max(Parameters[, , 5]), max(Parameters[, 
+                      , 6]), max(Parameters[, , 7]))
                     dlag = (max_param - min_param)/100
                     range_param = numeric()
                     for (j in 1:5) {
@@ -4594,19 +4834,21 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                     min_Param = c(min(Parameter[, 1]), min(Parameter[, 
                       2]), min(Parameter[, 3]), min(Parameter[, 
                       4]), min(Parameter[, 5]), min(Parameter[, 
-                      6]), min(Parameter[, 7]))
+                      6]), min(Parameter[, 7]), min(Parameter[, 
+                      8]), min(Parameter[, 9]))
                     max_Param = c(max(Parameter[, 1]), max(Parameter[, 
                       2]), max(Parameter[, 3]), max(Parameter[, 
                       4]), max(Parameter[, 5]), max(Parameter[, 
-                      6]), max(Parameter[, 7]))
+                      6]), max(Parameter[, 7]), max(Parameter[, 
+                      8]), max(Parameter[, 9]))
                     dlag = (max_Param - min_Param)/100
                     range_Param = numeric()
-                    for (j in 1:7) {
+                    for (j in 1:9) {
                       range_Param = cbind(range_Param, seq(min_Param[j] + 
                         dlag[j]/2, max_Param[j] - dlag[j]/2, 
                         by = dlag[j]))
                     }
-                    for (j in 1:7) {
+                    for (j in 1:9) {
                       plot(x = longueur, y = Parameter[, j], 
                         type = "l", col = "grey", ylab = paste(Param[j]), 
                         xlab = "iteration number", main = paste("Thinning interval = ", 
@@ -4628,7 +4870,7 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                   param = c("theta", "alpha", "PI", "S1", "C1")
                   Param = c("Capital Theta", "Capital Lambda", 
                     "beta", "~sigma[alpha]", "~sigma[theta]", 
-                    "S Overall", "C Overall")
+                    "S Overall", "C Overall", "S1_new", "C1_new")
                   par(mfcol = c(5, 2))
                   longueur = 1:long
                   for (j in 1:5) {
@@ -4641,7 +4883,7 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                             nb_chains)/Thin))
                     }
                   }
-                  for (j in 1:7) {
+                  for (j in 1:9) {
                     plot(density(Parameter[, j]), lwd = 4, type = "l", 
                       col = "grey", main = paste(Param[j], " \n Thinning interval = ", 
                         thin.interval, "\n Total samplesize kept = ", 
@@ -4695,7 +4937,7 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                       param = c("alpha", "PI", "S1", "C1")
                       Param = c("Capital Theta", "Capital Lambda", 
                         "beta", "~sigma[alpha]", "S Overall", 
-                        "C Overall")
+                        "C Overall", "S1_new", "C1_new")
                       no_chains = length(chain)
                       iter_chain = round((iter.num * nb_chains - 
                         (burn_in) * nb_chains)/Thin, 0)/no_chains
@@ -4725,27 +4967,30 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                                 nb_chains)/Thin), ylim = range(range_param[, 
                               j]))
                           for (l in 1:length(chain)) {
-                            lines(x = longueur, y = Parameters[l * 
-                              longueur, i, j], col = l)
+                            lines(x = longueur, y = Parameters[longueur + 
+                              (iter_chain * (l - 1)), i, j], 
+                              col = l)
                           }
                         }
                       }
                       min_Param = c(min(Parameter[, 1]), min(Parameter[, 
                         2]), min(Parameter[, 3]), min(Parameter[, 
                         4]), min(Parameter[, 5]), min(Parameter[, 
-                        6]))
+                        6]), min(Parameter[, 7]), min(Parameter[, 
+                        8]))
                       max_Param = c(max(Parameter[, 1]), max(Parameter[, 
                         2]), max(Parameter[, 3]), max(Parameter[, 
                         4]), max(Parameter[, 5]), max(Parameter[, 
-                        6]))
+                        6]), max(Parameter[, 7]), max(Parameter[, 
+                        8]))
                       dlag = (max_Param - min_Param)/100
                       range_Param = numeric()
-                      for (j in 1:6) {
+                      for (j in 1:8) {
                         range_Param = cbind(range_Param, seq(min_Param[j] + 
                           dlag[j]/2, max_Param[j] - dlag[j]/2, 
                           by = dlag[j]))
                       }
-                      for (j in 1:6) {
+                      for (j in 1:8) {
                         plot(x = longueur, y = Parameter[longueur, 
                           j], type = "n", col = 1, ylab = paste(Param[j]), 
                           xlab = "iteration number", main = paste("Thinning interval = ", 
@@ -4754,8 +4999,8 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                               nb_chains)/Thin), ylim = range(range_Param[, 
                             j]))
                         for (l in 1:length(chain)) {
-                          lines(x = longueur, y = Parameter[l * 
-                            longueur, j], col = l)
+                          lines(x = longueur, y = Parameter[longueur + 
+                            (iter_chain * (l - 1)), j], col = l)
                         }
                       }
                       dev.off()
@@ -4768,7 +5013,7 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                       param = c("alpha", "PI", "S1", "C1")
                       Param = c("Capital Theta", "Capital Lambda", 
                         "beta", "~sigma[alpha]", "S Overall", 
-                        "C Overall")
+                        "C Overall", "S1_new", "C1_new")
                       min_param = c(min(Parameters[, , 1]), min(Parameters[, 
                         , 2]), min(Parameters[, , 3]), min(Parameters[, 
                         , 4]))
@@ -4800,19 +5045,21 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                       min_Param = c(min(Parameter[, 1]), min(Parameter[, 
                         2]), min(Parameter[, 3]), min(Parameter[, 
                         4]), min(Parameter[, 5]), min(Parameter[, 
-                        6]))
+                        6]), min(Parameter[, 7]), min(Parameter[, 
+                        8]))
                       max_Param = c(max(Parameter[, 1]), max(Parameter[, 
                         2]), max(Parameter[, 3]), max(Parameter[, 
                         4]), max(Parameter[, 5]), max(Parameter[, 
-                        6]))
+                        6]), max(Parameter[, 7]), max(Parameter[, 
+                        8]))
                       dlag = (max_Param - min_Param)/100
                       range_Param = numeric()
-                      for (j in 1:6) {
+                      for (j in 1:8) {
                         range_Param = cbind(range_Param, seq(min_Param[j] + 
                           dlag[j]/2, max_Param[j] - dlag[j]/2, 
                           by = dlag[j]))
                       }
-                      for (j in 1:6) {
+                      for (j in 1:8) {
                         plot(x = longueur, y = Parameter[, j], 
                           type = "l", col = "grey", ylab = paste(Param[j]), 
                           xlab = "iteration number", main = paste("Thinning interval = ", 
@@ -4829,7 +5076,8 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                     pdf(file.pdf3, paper = "a4", height = 20)
                     param = c("alpha", "PI", "S1", "C1")
                     Param = c("Capital Theta", "Capital Lambda", 
-                      "beta", "~sigma[alpha]", "S Overall", "C Overall")
+                      "beta", "~sigma[alpha]", "S Overall", "C Overall", 
+                      "S1_new", "C1_new")
                     par(mfcol = c(5, 2))
                     longueur = 1:long
                     for (j in 1:4) {
@@ -4842,7 +5090,7 @@ function (data, burn_in = 0, i = NULL, Thin = 1, sub_rs = NULL,
                               nb_chains)/Thin))
                       }
                     }
-                    for (j in 1:6) {
+                    for (j in 1:8) {
                       plot(density(Parameter[, j]), lwd = 4, 
                         type = "l", col = "grey", main = paste(Param[j], 
                           " \n Thinning interval = ", thin.interval, 

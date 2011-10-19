@@ -8,7 +8,7 @@
 
 \usage{
 
-HSROCSummary(data, burn_in = 0, i = NULL, Thin = 1, sub_rs=NULL, 
+HSROCSummary(data, burn_in = 0, iter.keep = NULL, Thin = 1, sub_rs=NULL, 
   point_estimate = c("median", "mean"), path = getwd(), chain = NULL,
   tv = NULL, digit = 6, print_plot = FALSE ) 
 
@@ -18,7 +18,7 @@ HSROCSummary(data, burn_in = 0, i = NULL, Thin = 1, sub_rs=NULL,
 \arguments{  
   \item{data}{a matrix with the number of rows equal to the number of studies and 4 columns.  Each row consists of the entries of the 2x2 table of the index test (i.e. test under evaluation) vs. the reference test reported in each study.  The ordering of the columns is ++, +-, -+, --, where the first entry refers to the result of the test under evaluation and the second entry refers to the result of the reference test. }
   \item{burn_in}{The number of early iterations that are to be dropped.  The default value is 0.   }
-  \item{i}{ Maximum number of iteration we want to keep. }
+  \item{iter.keep}{ Maximum number of iteration we want to keep. }
   \item{Thin}{a single numeric value.  It sets the numerical field used to select every thin-th iteration to contribute to the estimates being calculated.  The default value is 1. }
   \item{sub_rs}{a list that describes the partition of the reference standard among the studies, if any.  See details for further explanations.}
   \item{point_estimate}{a character string indicating which method is to be used to calculate the estimates.  One of "median" (default) or "mean", can be used }
@@ -48,7 +48,7 @@ If the argument \code{print_plot} is equal to \code{TRUE}, the function will cre
 
 A list of : Point estimates and \eqn{95\%} highest posterior density (HPD) intervals of the between-study parameters, within-study parameters and reference standard parameters.  All estimates are obtained via a Gibbs sampler process.
 
-It also prints in the \code{path} working directory a text file with a more complete summary of the results listed above (i.e. the results also include stadard errors and MC errors).  
+It also prints in the \code{path} working directory a text file with a more complete summary of the results listed above (i.e. the results also include stadard errors and MC errors plus the posterior predictive value for the sensitivity and specificity of a new study that has not yet taken place).  
 
 }
 
@@ -56,6 +56,9 @@ It also prints in the \code{path} working directory a text file with a more comp
 \examples{
 
 #REAL-LIFE EXAMPLES
+#
+#PLEASE NOTE THAT BOTH EXAMPLES BELOW ASSUME THE EXISTANCE OF POSTERIOR SAMPLES OBTAINED FROM THE 'HSROC' FUNCTION.  
+#IN OTHER WORDS' ONE NEEDS TO RUN THE 'HSROC' FUNCTION BEFORE USING THE 'HSROCSUmmary' FUNCTION.
 #
 #Example 1
 #To get descriptive statistics and graphical summaries for the MRI data 
@@ -75,7 +78,8 @@ HSROCSummary(data = MRI, burn_in=5000, print_plot=TRUE )
 #each chain.  Let's assume there are two fictional directoies 
 #chain_path = list("C:/path_to_chain_1", "C:/path_to_chain_2").
 #Let's assume we drop the first 5,000 iterations and we use a thinning 
-#interval of 10.
+#interval of 10. 
+
 
 data(In.house)	#load the data
 \dontrun{

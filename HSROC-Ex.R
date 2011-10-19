@@ -27,9 +27,8 @@ flush(stderr()); flush(stdout())
 
 #There were four different reference standards for the In.house dataset.  
 #The first reference standard was used in study 1 and 2, 
-#the second was used in studies 3 and 4, the third in study 5 and the 
-#fourth in studies 6 to 12.
-REFSTD = list(4, 1:2, 3:4, 5, 6:12) 
+#the second was used in studies 3 and 4 and the third in study 5 to 12. 
+REFSTD = list(4, 1:2, 3:4, 5:11) 
 
 #===============================================================
 #TO SET UP DATA AND INITIAL VALUES
@@ -62,17 +61,30 @@ init = list(init1, init2, init3)
 #TO PROVIDE PRIOR INFORMATION
 #===============================================================
 
-S2.a = c(0.2, 0.2, 0.6, 0.7) ; 	S2.b = c(0.6, 0.7, 0.8, 0.9)
-C2.a = rep(0.9, 4) ;	C2.b = rep(1, 4)
+S2.a = c(0.2, 0.2, 0.7) ; 	S2.b = c(0.6, 0.7, 0.9)
+C2.a = rep(0.9, 3) ;	C2.b = rep(1, 3)
 
 #===============================================================
 #TO RUN GIBBS SAMPLER
 #===============================================================
 
-estimates = HSROC(data=In.house, init=init, iter.num=10,  
-   prior.SEref=c(S2.a,S2.b), prior.SPref=c (C2.a,C2.b), sub_rs=REFSTD) 
-
-
+## Not run: 
+##D estimates = HSROC(data=In.house, init=init, iter.num=50000,  
+##D    prior.SEref=c(S2.a,S2.b), prior.SPref=c (C2.a,C2.b), sub_rs=REFSTD) 
+##D 
+##D 
+##D #Putting prior information on sigma_alpha^2 (sigma_alphs squared) 
+##D #instead of sigma_alpha
+##D estimates = HSROC(data=In.house, init=init, iter.num=50000,  
+##D    prior.SEref=c(S2.a,S2.b), prior.SPref=c (C2.a,C2.b), 
+##D 		sub_rs=REFSTD, prior_sd_alpha = list(0,2,"v"))
+##D 
+##D #Let's assume the same cut-off across all studies
+##D estimates = HSROC(data=In.house, init=init, iter.num=50000,  
+##D    prior.SEref=c(S2.a,S2.b), prior.SPref=c (C2.a,C2.b), 
+##D 		sub_rs=REFSTD, prior_sd_theta = list(0,0,"sd"))
+##D 
+## End(Not run)
 
 
 
@@ -92,6 +104,9 @@ flush(stderr()); flush(stdout())
 
 #REAL-LIFE EXAMPLES
 #
+#PLEASE NOTE THAT BOTH EXAMPLES BELOW ASSUME THE EXISTANCE OF POSTERIOR SAMPLES OBTAINED FROM THE 'HSROC' FUNCTION.  
+#IN OTHER WORDS' ONE NEEDS TO RUN THE 'HSROC' FUNCTION BEFORE USING THE 'HSROCSUmmary' FUNCTION.
+#
 #Example 1
 #To get descriptive statistics and graphical summaries for the MRI data 
 #(Scheidler et al. 1997) after dropping the first 5,000 iterations.
@@ -110,7 +125,8 @@ data(MRI)	#load the data
 #each chain.  Let's assume there are two fictional directoies 
 #chain_path = list("C:/path_to_chain_1", "C:/path_to_chain_2").
 #Let's assume we drop the first 5,000 iterations and we use a thinning 
-#interval of 10.
+#interval of 10. 
+
 
 data(In.house)	#load the data
 ## Not run: 
@@ -256,6 +272,31 @@ c2 = c(0.75,0.95) 	 #Specificity of the reference tests
 sim.data = simdata(N=N, n=seq(30,120,1), n.random=TRUE, sub_rs = REFSTD, 
    prev=pi,  se_ref=s2, sp_ref=c2, T=THETA, L=LAMBDA, sd_t=sd_theta, 
    sd_a=sd_alpha, b=beta)
+
+
+#EXAMPLE 3
+#Assume the same context as the one in EXAMPLE 2 and let's suppose
+#that each individual cut-off theta_i should lie between [-5,5] 
+ 
+N = 15
+LAMBDA = 3.6
+sd_alpha = 1.15
+THETA = 2.3
+sd_theta = 0.75
+beta = 0.15
+pi = runif(15,0.1,0.5)
+
+REFSTD = list(2, 1:5, 6:15)  #Two different reference standards ...
+s2 = c(0.40, 0.6)	 #Sensitivity of the reference tests
+c2 = c(0.75,0.95) 	 #Specificity of the reference tests	
+
+#Thus, for the first 5 studies, S2 = 0.40 and C2 = 0.75 while for the last 
+#10 studies s2 = 0.6 and c2 = 0.95
+
+
+sim.data = simdata(N=N, n=seq(30,120,1), n.random=TRUE, sub_rs = REFSTD, 
+   prev=pi,  se_ref=s2, sp_ref=c2, T=THETA, range.T=c(-5,5),L=LAMBDA, 
+   sd_t=sd_theta,sd_a=sd_alpha, b=beta)
 
 
 

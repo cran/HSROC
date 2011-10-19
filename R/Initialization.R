@@ -1,7 +1,7 @@
 Initialization <-
 function (first.run, random, param, cond.Ind, rs, GS_se, GS_sp, 
     Data1, Data2, Data3, Data4, Data5, Data6, path, studies, 
-    sco) 
+    sco, psa, pst) 
 {
     setwd(path)
     x = rs[[1]]
@@ -28,14 +28,46 @@ function (first.run, random, param, cond.Ind, rs, GS_se, GS_sp,
         if (first.run == TRUE) {
             if (random == TRUE) {
                 file.ini = "Random Initial values.txt"
+                if (psa == "sd") {
+                  init.sigma.alpha = runif(1, 1/sqrt(b.disp.alpha), 
+                    1/sqrt(a.disp.alpha))
+                  prec.alpha = 1/(init.sigma.alpha)^2
+                }
+                else {
+                  if (psa == "v") {
+                    init.sigma.alpha = runif(1, 1/b.disp.alpha, 
+                      1/a.disp.alpha)
+                    prec.alpha = 1/(init.sigma.alpha)^2
+                  }
+                  else {
+                    if (psa == "p") {
+                      init.sigma.alpha = rgamma(1, shape = a.disp.alpha, 
+                        scale = b.disp.alpha)
+                      prec.alpha = 1/(init.sigma.alpha)^2
+                    }
+                  }
+                }
+                if (pst == "sd") {
+                  init.sigma.theta = runif(1, 1/sqrt(b.disp.theta), 
+                    1/sqrt(a.disp.theta))
+                  prec.theta = 1/(init.sigma.theta)^2
+                }
+                else {
+                  if (pst == "v") {
+                    init.sigma.theta = runif(1, 1/b.disp.theta, 
+                      1/a.disp.theta)
+                    prec.theta = 1/(init.sigma.theta)^2
+                  }
+                  else {
+                    if (pst == "p") {
+                      init.sigma.theta = rgamma(1, shape = a.disp.theta, 
+                        scale = b.disp.theta)
+                      prec.theta = 1/(init.sigma.theta)^2
+                    }
+                  }
+                }
                 init.THETA = runif(1, min = a.THETA, max = b.THETA)
-                init.sigma.theta = runif(1, 1/sqrt(b.disp.theta), 
-                  1/sqrt(a.disp.theta))
-                prec.theta = 1/(init.sigma.theta)^2
                 init.LAMBDA = runif(1, min = a.LAMBDA, max = b.LAMBDA)
-                init.sigma.alpha = runif(1, 1/sqrt(b.disp.alpha), 
-                  1/sqrt(a.disp.alpha))
-                prec.alpha = 1/(init.sigma.alpha)^2
                 init.beta = runif(1, min = a.beta, max = b.beta)
                 init.theta = rnorm(n = studies, mean = init.THETA, 
                   sd = init.sigma.theta)

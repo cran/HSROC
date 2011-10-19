@@ -9,9 +9,9 @@
 HSROC(data, iter.num, init = NULL, sub_rs=NULL, 
   first.run = TRUE, path=getwd(), refresh = 100, 
   prior.SEref=NULL, prior.SPref=NULL, prior_PI=c(0,1), 
-  prior_LAMBDA = c(0,6), prior_THETA = c(-8,8), 
-  prior_sd_alpha = c(0,2), prior_sd_theta = c(0,2), 
-  prior_beta = c(-2,2)) 
+  prior_LAMBDA = c(-3,3), prior_THETA = c(-1.5,1.5), 
+  prior_sd_alpha = list(0,2,"sd"), prior_sd_theta = list(0,2,"sd"), 
+  prior_beta = c(-0.75,0.75)) 
 
 }
 
@@ -28,11 +28,11 @@ HSROC(data, iter.num, init = NULL, sub_rs=NULL,
   \item{refresh}{A positive integer defining the frequency at which the Gibbs sampler's progress will be displayed on the R GUI.  The default is 100.  }
 
   \item{prior_PI}{a vector with 2 components specifying the minimum and maximum values for the prevalence in each study  based on prior information.  If unspecified, \eqn{Beta(1,1)}{Beta(1,1)} priors are used.  }
-  \item{prior_LAMBDA}{a vector with 2 components specifying the minimum and maximum values for the difference in mean values among disease positive and negative groups based on prior information.  The default value is \code{c(0,6)} implying a \eqn{U(0,6)}{U(0,6)}.}
-  \item{prior_THETA}{a vector with 2 components specifying the minimum and maximum values for the overall mean cut-off value for defining a positive test based on prior information.  The default value is \code{c(-8,8)} implying a \eqn{U(-8,8)}{U(-8,8)}.}
-  \item{prior_sd_alpha}{a vector with 2 components specifying the minimum and maximum values for the between study standard deviation in the difference in  mean values of the disease positive and negative groups in the \eqn{i^{th}}{ith} study, \eqn{\alpha_i}{alpha_i}, based on prior information.  The default value is \code{c(0,2)} implying a \eqn{U(0,2)}{U(0,2)}. }
-  \item{prior_sd_theta}{a vector with 2 components specifying the minimum and maximum values for the between study standard deviation in the cut-off, \eqn{\theta_i}{theta_i}, in the \eqn{i^{th}}{ith} study based on prior information.  The default value is \code{c(0,2)} implying a \eqn{U(0,2)}{U(0,2)}.  If both components of the vector are zero, that is \code{c(0,0)}, then the model assumes the same cut-off across all studies (\eqn{\Theta}{THETA}).  This special case won't return any estimates for \eqn{\theta_i}{theta_i} and \eqn{\sigma_{\theta}}{sigma_theta} }
-  \item{prior_beta}{a vector with 2 components specifying the minimum and maximum values for the logarithm of the ratio of the standard deviation of test results among patients with and without the disease, based on prior belief.  This parameter is assumed to be constant across studies.  The default value is \code{c(-2,2)} implying a \eqn{U(-2,2)}{U(-2,2)}.  If the argument is (\code{NULL}) the function assumes a range of (-log( (LAMBDA.up/3) + 1 ) , log( (LAMBDA.up/3) + 1 ) ), where LAMBDA.up is the upper limit of \code{prior.LAMBDA}. }
+  \item{prior_LAMBDA}{a vector with 2 components specifying the minimum and maximum values for the difference in mean values (diagnostic accuracy) among disease positive and negative groups based on prior information.  The default value is \code{c(-3,3)} implying a \eqn{U(-3,3)}{U(-3,3)}.}
+  \item{prior_THETA}{a vector with 2 components specifying the minimum and maximum values for the overall mean cut-off value for defining a positive test based on prior information.  The default value is \code{c(-1.5,1.5)} implying a \eqn{U(-1.5,1.5)}{U(-1.5,1.5)}.}
+  \item{prior_sd_alpha}{a list with 3 components.  The first 2 components are specifying the minimum and maximum values for the between study standard deviation in the difference in  mean values of the disease positive and negative groups in the \eqn{i^{th}}{ith} study, \eqn{\alpha_i}{alpha_i}, based on prior information.  The third component determine whether we want the prior to be on the standard deviation (sd) or the variance (v).  The default value is \code{list(0,2,"sd")} implying a \eqn{U(0,2)}{U(0,2)} prior. }
+  \item{prior_sd_theta}{a list with 3 components. The first 2 components are specifying the minimum and maximum values for the between study standard deviation in the cut-off, \eqn{\theta_i}{theta_i}, in the \eqn{i^{th}}{ith} study based on prior information.  The third component determine whether we want the prior to be on the standard deviation (s) or the variance (v). The default value is \code{list(0,2,"sd")} implying a \eqn{U(0,2)}{U(0,2)} prior.  If the first 2 components of the list are zero, that is \code{list(0,0,"sd")}, then the model assumes the same cut-off across all studies (\eqn{\Theta}{THETA}).  This special case won't return any estimates for \eqn{\theta_i}{theta_i} and \eqn{\sigma_{\theta}}{sigma_theta} }
+  \item{prior_beta}{a vector with 2 components specifying the minimum and maximum values for the logarithm of the ratio of the standard deviation of test results among patients with and without the disease, based on prior belief.  This parameter is assumed to be constant across studies.  The default value is \code{c(-0.75,0.75)} implying a \eqn{U(-0..75,0.75)}{U(-0.75,0.75)}.  If the argument is (\code{NULL}) the function assumes a range of (-log( (LAMBDA.up/3) + 1 ) , log( (LAMBDA.up/3) + 1 ) ), where LAMBDA.up is the upper limit of \code{prior.LAMBDA}. }
 
 
 }
@@ -104,9 +104,8 @@ C. M. Rutter and C. A. Gatsonis. \emph{A hierarchical regression approach to met
 
 #There were four different reference standards for the In.house dataset.  
 #The first reference standard was used in study 1 and 2, 
-#the second was used in studies 3 and 4, the third in study 5 and the 
-#fourth in studies 6 to 12.
-REFSTD = list(4, 1:2, 3:4, 5, 6:12) 
+#the second was used in studies 3 and 4 and the third in study 5 to 12. 
+REFSTD = list(4, 1:2, 3:4, 5:11) 
 
 #===============================================================
 #TO SET UP DATA AND INITIAL VALUES
@@ -139,17 +138,30 @@ init = list(init1, init2, init3)
 #TO PROVIDE PRIOR INFORMATION
 #===============================================================
 
-S2.a = c(0.2, 0.2, 0.6, 0.7) ; 	S2.b = c(0.6, 0.7, 0.8, 0.9)
-C2.a = rep(0.9, 4) ;	C2.b = rep(1, 4)
+S2.a = c(0.2, 0.2, 0.7) ; 	S2.b = c(0.6, 0.7, 0.9)
+C2.a = rep(0.9, 3) ;	C2.b = rep(1, 3)
 
 #===============================================================
 #TO RUN GIBBS SAMPLER
 #===============================================================
 
-estimates = HSROC(data=In.house, init=init, iter.num=10,  
+\dontrun{
+estimates = HSROC(data=In.house, init=init, iter.num=50000,  
    prior.SEref=c(S2.a,S2.b), prior.SPref=c (C2.a,C2.b), sub_rs=REFSTD) 
 
 
+#Putting prior information on sigma_alpha^2 (sigma_alphs squared) 
+#instead of sigma_alpha
+estimates = HSROC(data=In.house, init=init, iter.num=50000,  
+   prior.SEref=c(S2.a,S2.b), prior.SPref=c (C2.a,C2.b), 
+		sub_rs=REFSTD, prior_sd_alpha = list(0,2,"v"))
+
+#Let's assume the same cut-off across all studies
+estimates = HSROC(data=In.house, init=init, iter.num=50000,  
+   prior.SEref=c(S2.a,S2.b), prior.SPref=c (C2.a,C2.b), 
+		sub_rs=REFSTD, prior_sd_theta = list(0,0,"sd"))
+
+}
 }
 
 \keyword{models}

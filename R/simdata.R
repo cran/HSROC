@@ -1,6 +1,7 @@
 simdata <-
 function (N, n, n.random = FALSE, sub_rs = NULL, prev, se_ref = NULL, 
-    sp_ref = NULL, T, L, sd_t, sd_a, b, path = getwd()) 
+    sp_ref = NULL, T, range.T = c(-Inf, Inf), L, range.L = c(-Inf, 
+        Inf), sd_t, sd_a, b, path = getwd()) 
 {
     if (N < 1) {
         cat("Number of studies must be at least 1 or greater. \n")
@@ -70,9 +71,15 @@ function (N, n, n.random = FALSE, sub_rs = NULL, prev, se_ref = NULL,
     s2 = se_ref
     c2 = sp_ref
     pi = prev
-    alpha = rnorm(N, L, sd_a)
+    LOW_a = range.L[1]
+    UP_a = range.L[2]
+    LOW_t = range.T[1]
+    UP_t = range.T[2]
+    alpha = mapply(truncnorm2, rep(LOW_a, N), rep(UP_a, N), MoreArgs = list(L, 
+        sd_a, 1))
     if (SCO == FALSE) {
-        theta = rnorm(N, T, sd_t)
+        theta = mapply(truncnorm2, rep(LOW_t, N), rep(UP_t, N), 
+            MoreArgs = list(T, sd_t, 1))
     }
     else {
         theta = rep(T, N)

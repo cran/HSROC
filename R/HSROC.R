@@ -1,9 +1,9 @@
 HSROC <-
 function (data, iter.num, init = NULL, sub_rs = NULL, first.run = TRUE, 
     path = getwd(), refresh = 100, prior.SEref = NULL, prior.SPref = NULL, 
-    prior_PI = c(0, 1), prior_LAMBDA = c(0, 6), prior_THETA = c(-8, 
-        8), prior_sd_alpha = c(0, 2), prior_sd_theta = c(0, 2), 
-    prior_beta = c(-2, 2)) 
+    prior_PI = c(0, 1), prior_LAMBDA = c(-3, 3), prior_THETA = c(-1.5, 
+        1.5), prior_sd_alpha = list(0, 2, "sd"), prior_sd_theta = list(0, 
+        2, "sd"), prior_beta = c(-0.75, 0.75)) 
 {
     if (missing(data)) 
         stop("You must provide a valid 'data' argument", call. = FALSE)
@@ -92,21 +92,23 @@ function (data, iter.num, init = NULL, sub_rs = NULL, first.run = TRUE,
         cat("The 'prior_THETA' argument is a vector with 2 components specifying a range.  Thus, the first component of the vector must be less than the second component. Type '? HSROC' for more help. \n")
         stop("Please respecify and call HSROC() again.\n")
     }
-    l.disp.alpha = prior_sd_alpha[1]
-    u.disp.alpha = prior_sd_alpha[2]
-    if (all(l.disp.alpha < u.disp.alpha) == FALSE) {
-        cat("The 'prior_sd_alpha' argument is a vector with 2 components specifying a range.  Thus, the first component of the vector must be less than the second component. Type '? HSROC' for more help. \n")
+    l.disp.alpha = prior_sd_alpha[[1]]
+    u.disp.alpha = prior_sd_alpha[[2]]
+    if (all(l.disp.alpha < u.disp.alpha) == FALSE & prior_sd_alpha[[3]] != 
+        "p") {
+        cat("The 'prior_sd_alpha' argument is a list with the first 2 components specifying a range.  Thus, the first component of the list must be less than the second component. Type '? HSROC' for more help. \n")
         stop("Please respecify and call HSROC() again.\n")
     }
-    l.disp.theta = prior_sd_theta[1]
-    u.disp.theta = prior_sd_theta[2]
+    l.disp.theta = prior_sd_theta[[1]]
+    u.disp.theta = prior_sd_theta[[2]]
     if (l.disp.theta != 0 & u.disp.theta != 0) {
-        if (all(l.disp.theta < u.disp.theta) == FALSE) {
-            cat("The 'prior_sd_theta' argument is a vector with 2 components specifying a range.  Thus, the first component of the vector must be less than the second component. Type '? HSROC' for more help. \n")
+        if (all(l.disp.theta < u.disp.theta) == FALSE & prior_sd_theta[[3]] != 
+            "p") {
+            cat("The 'prior_sd_theta' argument is a list with the first 2 components specifying a range.  Thus, the first component of the list must be less than the second component. Type '? HSROC' for more help. \n")
             stop("Please respecify and call HSROC() again.\n")
         }
     }
-    if (prior_sd_theta[1] == 0 & prior_sd_theta[2] == 0) {
+    if (prior_sd_theta[[1]] == 0 & prior_sd_theta[[2]] == 0) {
         SCO = TRUE
     }
     else {
@@ -157,9 +159,12 @@ function (data, iter.num, init = NULL, sub_rs = NULL, first.run = TRUE,
     setwd(path)
     condInd = TRUE
     prior_dist_PI = "beta"
-    range_rij = c(-12, 12)
+    range_rij = c(-prior.LAMBDA.upper/2 - 3 * exp(-beta.a/2), 
+        prior.LAMBDA.upper/2 + 3 * exp(beta.b/2))
     low.rj = range_rij[1]
     up.rj = range_rij[2]
+    write(c(low.rj, up.rj), file = "range of latent variable.txt", 
+        ncolumns = 2)
     alpha.PI = beta.parameter(low = low.pi, up = up.pi)[1, ]
     beta.PI = beta.parameter(low = low.pi, up = up.pi)[2, ]
     L.disp.alpha = L.disp.theta = numeric()
@@ -171,8 +176,25 @@ function (data, iter.num, init = NULL, sub_rs = NULL, first.run = TRUE,
             L.disp.alpha = l.disp.alpha
         }
     }
-    low.disp.alpha = u.disp.alpha^(-2)
-    up.disp.alpha = L.disp.alpha^(-2)
+    if (prior_sd_alpha[[3]] == "sd") {
+        low.disp.alpha = u.disp.alpha^(-2)
+        up.disp.alpha = L.disp.alpha^(-2)
+        write(1, file = "Prior on sigma_alpha.txt", ncolumns = 1)
+    }
+    else {
+        if (prior_sd_alpha[[3]] == "v") {
+            low.disp.alpha = u.disp.alpha^(-1)
+            up.disp.alpha = L.disp.alpha^(-1)
+            write(2, file = "Prior on sigma_alpha.txt", ncolumns = 1)
+        }
+        else {
+            if (prior_sd_alpha[[3]] == "p") {
+                low.disp.alpha = L.disp.alpha
+                up.disp.alpha = u.disp.alpha
+                write(3, file = "Prior on sigma_alpha.txt", ncolumns = 1)
+            }
+        }
+    }
     if (SCO == FALSE) {
         if (l.disp.theta == 0) {
             L.disp.theta = 1e-10
@@ -182,8 +204,26 @@ function (data, iter.num, init = NULL, sub_rs = NULL, first.run = TRUE,
                 L.disp.theta = l.disp.theta
             }
         }
-        low.disp.theta = u.disp.theta^(-2)
-        up.disp.theta = L.disp.theta^(-2)
+        if (prior_sd_theta[[3]] == "sd") {
+            low.disp.theta = u.disp.theta^(-2)
+            up.disp.theta = L.disp.theta^(-2)
+            write(1, file = "Prior on sigma_theta.txt", ncolumns = 1)
+        }
+        else {
+            if (prior_sd_theta[[3]] == "v") {
+                low.disp.theta = u.disp.theta^(-1)
+                up.disp.theta = L.disp.theta^(-1)
+                write(2, file = "Prior on sigma_theta.txt", ncolumns = 1)
+            }
+            else {
+                if (prior_sd_theta[[3]] == "p") {
+                  low.disp.theta = L.disp.theta
+                  up.disp.theta = u.disp.theta
+                  write(3, file = "Prior on sigma_theta.txt", 
+                    ncolumns = 1)
+                }
+            }
+        }
     }
     else {
         if (SCO == TRUE) {
@@ -213,7 +253,7 @@ function (data, iter.num, init = NULL, sub_rs = NULL, first.run = TRUE,
     }
     else {
         if (Gold_Std == TRUE) {
-            Sens2.alpha = Sens2.beta = NULL
+            Sens2.alpha = Sens2.beta = Gold_se = NULL
         }
     }
     if (Gold_Std == FALSE) {
@@ -233,7 +273,7 @@ function (data, iter.num, init = NULL, sub_rs = NULL, first.run = TRUE,
     }
     else {
         if (Gold_Std == TRUE) {
-            Spec2.alpha = Spec2.beta = NULL
+            Spec2.alpha = Spec2.beta = Gold_sp = NULL
         }
     }
     if (first.run == TRUE) {
@@ -268,7 +308,11 @@ function (data, iter.num, init = NULL, sub_rs = NULL, first.run = TRUE,
         GS_se = Gold_se, GS_sp = Gold_sp, Data1 = Start.values, 
         Data2 = RESTART_i, Data3 = RESTART, Data4 = Start.values2, 
         Data5 = Start.REFSTD, Data6 = RESTART_REFSTD, path = path, 
-        studies = N, sco = SCO)
+        studies = N, sco = SCO, psa = prior_sd_alpha[[3]], pst = prior_sd_theta[[3]])
+    if (INITS[[1]][3] == 0 | INITS[[1]][1] == 0) {
+        cat(paste("Unsuitable initial values were provided. "))
+        stop("Please respecify and call HSROC() again.\n  If you're using 'init=NULL' you need just to run the 'HSROC' function again.\n")
+    }
     init.sigma.alpha = INITS[[1]][3]
     prec.alpha = INITS[[1]][4]
     init.THETA = INITS[[1]][5]
@@ -575,18 +619,60 @@ function (data, iter.num, init = NULL, sub_rs = NULL, first.run = TRUE,
                 vec.THETA = THETA
             }
         }
-        prec.alpha.shape = (N/2) - (1/2)
-        prec.alpha.scale = (0.5 * sum((vec.alpha - vec.LAMBDA)^2))^(-1)
-        prec.alpha = truncgamma(n = 1, shape = prec.alpha.shape, 
-            scale = prec.alpha.scale, l = low.disp.alpha, u = up.disp.alpha)
+        if (prior_sd_alpha[[3]] == "sd") {
+            prec.alpha.shape = (N/2) - (1/2)
+            prec.alpha.scale = (0.5 * sum((vec.alpha - vec.LAMBDA)^2))^(-1)
+            prec.alpha = truncgamma(n = 1, shape = prec.alpha.shape, 
+                scale = prec.alpha.scale, l = low.disp.alpha, 
+                u = up.disp.alpha)
+        }
+        else {
+            if (prior_sd_alpha[[3]] == "v") {
+                prec.alpha.shape = (N/2) - 1
+                prec.alpha.scale = (0.5 * sum((vec.alpha - vec.LAMBDA)^2))^(-1)
+                prec.alpha = truncgamma(n = 1, shape = prec.alpha.shape, 
+                  scale = prec.alpha.scale, l = low.disp.alpha, 
+                  u = up.disp.alpha)
+            }
+            else {
+                if (prior_sd_alpha[[3]] == "p") {
+                  prec.alpha.shape = (N/2) + low.disp.alpha
+                  prec.alpha.scale = (up.disp.alpha + 0.5 * sum((vec.alpha - 
+                    vec.LAMBDA)^2))^(-1)
+                  prec.alpha = rgamma(n = 1, shape = prec.alpha.shape, 
+                    scale = prec.alpha.scale)
+                }
+            }
+        }
         sigma.alpha = sqrt(1/prec.alpha)
         vec.sigma.alpha = sigma.alpha
         if (SCO == FALSE) {
-            prec.theta.shape = (N/2) - (1/2)
-            prec.theta.scale = (0.5 * sum((vec.theta - vec.THETA)^2))^(-1)
-            prec.theta = truncgamma(n = 1, shape = prec.theta.shape, 
-                scale = prec.theta.scale, l = low.disp.theta, 
-                u = up.disp.theta)
+            if (prior_sd_theta[[3]] == "sd") {
+                prec.theta.shape = (N/2) - (1/2)
+                prec.theta.scale = (0.5 * sum((vec.theta - vec.THETA)^2))^(-1)
+                prec.theta = truncgamma(n = 1, shape = prec.theta.shape, 
+                  scale = prec.theta.scale, l = low.disp.theta, 
+                  u = up.disp.theta)
+            }
+            else {
+                if (prior_sd_theta[[3]] == "v") {
+                  prec.theta.shape = (N/2) - (1/2)
+                  prec.theta.scale = (0.5 * sum((vec.theta - 
+                    vec.THETA)^2))^(-1)
+                  prec.theta = truncgamma(n = 1, shape = prec.theta.shape, 
+                    scale = prec.theta.scale, l = low.disp.theta, 
+                    u = up.disp.theta)
+                }
+                else {
+                  if (prior_sd_alpha[[3]] == "p") {
+                    prec.theta.shape = (N/2) + low.disp.theta
+                    prec.theta.scale = (up.disp.theta + 0.5 * 
+                      sum((vec.theta - vec.THETA)^2))^(-1)
+                    prec.theta = rgamma(n = 1, shape = prec.theta.shape, 
+                      scale = prec.theta.scale)
+                  }
+                }
+            }
             sigma.theta = sqrt(1/prec.theta)
             vec.sigma.theta = sigma.theta
         }
@@ -600,6 +686,35 @@ function (data, iter.num, init = NULL, sub_rs = NULL, first.run = TRUE,
             mean = 0, sd = 1, lower.tail = TRUE)
         vec.S1 = Sens1
         vec.C1 = Spec1
+        beta_new = runif(1, beta.a, beta.b)
+        theta_new = rnorm(1, mean = vec.THETA, sd = vec.sigma.theta)
+        alpha_new = rnorm(1, mean = vec.LAMBDA, sd = vec.sigma.alpha)
+        Sens1_new = pnorm(exp(-beta_new/2) * (theta_new - alpha_new/2), 
+            mean = 0, sd = 1, lower.tail = FALSE)
+        Spec1_new = pnorm(exp(beta_new/2) * (theta_new + alpha_new/2), 
+            mean = 0, sd = 1, lower.tail = TRUE)
+        if (SCO == FALSE) {
+            write(cbind(vec.alpha, vec.theta, vec.S1, vec.C1, 
+                vec.PI), file = file.Restart, ncolumns = N)
+            write(c(vec.LAMBDA, vec.sigma.alpha, vec.THETA, vec.sigma.theta, 
+                vec.beta), file = file.Restart2)
+            write(t(rbind(vec.S2, vec.C2)), file = file.Restart_REFSTD, 
+                ncolumns = length(n_REFSTD))
+        }
+        else {
+            if (SCO == TRUE) {
+                write(cbind(vec.alpha, vec.S1, vec.C1, vec.PI), 
+                  file = file.Restart, ncolumns = N)
+                write(c(vec.LAMBDA, vec.sigma.alpha, vec.THETA, 
+                  vec.beta), file = file.Restart2)
+                write(t(rbind(vec.S2, vec.C2)), file = file.Restart_REFSTD, 
+                  ncolumns = length(n_REFSTD))
+            }
+        }
+        write(Sens1_new, file = "Sens1_new.txt", append = TRUE, 
+            ncolumns = N)
+        write(Spec1_new, file = "Spec1_new.txt", append = TRUE, 
+            ncolumns = N)
         write(vec.PI, file = file.pi, append = TRUE, ncolumns = N)
         write(vec.alpha, file = file.alpha, append = TRUE, ncolumns = N)
         write(vec.sigma.alpha, file = file.sig.alpha, append = TRUE, 
@@ -610,6 +725,7 @@ function (data, iter.num, init = NULL, sub_rs = NULL, first.run = TRUE,
         write(vec.beta, file = file.beta, append = TRUE, ncolumns = N)
         write(vec.S1, file = file.S1, append = TRUE, ncolumns = N)
         write(vec.C1, file = file.C1, append = TRUE, ncolumns = N)
+        write(f.beta, file = file.choix, append = TRUE, ncolumns = 11)
         write(C_overall, file = file.C_overall, append = TRUE, 
             ncolumns = N)
         write(S_overall, file = file.S_overall, append = TRUE, 
@@ -646,7 +762,7 @@ function (data, iter.num, init = NULL, sub_rs = NULL, first.run = TRUE,
         write(cbind(vec.alpha, vec.theta, vec.S1, vec.C1, vec.PI), 
             file = file.Restart, append = TRUE, ncolumns = N)
         write(c(vec.LAMBDA, vec.sigma.alpha, vec.THETA, vec.sigma.theta, 
-            vec.beta), file = file.Restart2, append = TRUE, ncolumns = 5)
+            vec.beta), file = file.Restart2, append = TRUE)
         write(t(rbind(vec.S2, vec.C2)), file = file.Restart_REFSTD, 
             append = TRUE, ncolumns = length(n_REFSTD))
         write(paste("______________________________________________________"), 
@@ -689,7 +805,7 @@ function (data, iter.num, init = NULL, sub_rs = NULL, first.run = TRUE,
             write(cbind(vec.alpha, vec.S1, vec.C1, vec.PI), file = file.Restart, 
                 append = TRUE, ncolumns = N)
             write(c(vec.LAMBDA, vec.sigma.alpha, vec.THETA, vec.beta), 
-                file = file.Restart2, append = TRUE, ncolumns = 5)
+                file = file.Restart2, append = TRUE)
             write(t(rbind(vec.S2, vec.C2)), file = file.Restart_REFSTD, 
                 append = TRUE, ncolumns = length(n_REFSTD))
             write(paste("______________________________________________________"), 
