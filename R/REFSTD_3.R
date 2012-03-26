@@ -1,5 +1,5 @@
 REFSTD_3 <-
-function (rs, n.sample, studies) 
+function (rs, n.sample) 
 {
     if (rs[[1]] == 1) {
         n_rs = sum(n.sample)

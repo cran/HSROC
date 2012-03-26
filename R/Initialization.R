@@ -1,7 +1,7 @@
 Initialization <-
 function (first.run, random, param, cond.Ind, rs, GS_se, GS_sp, 
     Data1, Data2, Data3, Data4, Data5, Data6, path, studies, 
-    sco, psa, pst) 
+    sco = FALSE, psa, pst) 
 {
     setwd(path)
     x = rs[[1]]
@@ -146,13 +146,13 @@ function (first.run, random, param, cond.Ind, rs, GS_se, GS_sp,
                       "init.theta", "init.S1", "init.C1", "init.PI")
                   }
                 }
-                write.table(study.dep_par, file = file.ini, row.name = FALSE)
+                write.table(study.dep_par, file = file.ini, row.names = FALSE)
                 write(paste("______________________________________________________"), 
                   file = file.ini, append = TRUE)
                 write(paste(""), file = file.ini, append = TRUE)
                 write(paste(""), file = file.ini, append = TRUE)
                 write.table(study.indep_par, file = file.ini, 
-                  append = TRUE, col.name = FALSE)
+                  append = TRUE, col.names = FALSE)
                 write(paste(""), file = file.ini, append = TRUE)
                 write(paste(""), file = file.ini, append = TRUE)
                 write(paste("______________________________________________________"), 
@@ -160,7 +160,7 @@ function (first.run, random, param, cond.Ind, rs, GS_se, GS_sp,
                 write(paste(""), file = file.ini, append = TRUE)
                 write(paste(""), file = file.ini, append = TRUE)
                 write.table(study.ref_std, file = file.ini, append = TRUE, 
-                  col.name = FALSE)
+                  col.names = FALSE)
                 write(paste(""), file = file.ini, append = TRUE)
                 write(paste(""), file = file.ini, append = TRUE)
                 if (sco == TRUE) {
@@ -239,13 +239,13 @@ function (first.run, random, param, cond.Ind, rs, GS_se, GS_sp,
                       "init.theta", "init.S1", "init.C1", "init.PI")
                   }
                 }
-                write.table(study.dep_par, file = file.ini, row.name = FALSE)
+                write.table(study.dep_par, file = file.ini, row.names = FALSE)
                 write(paste("______________________________________________________"), 
                   file = file.ini, append = TRUE)
                 write(paste(""), file = file.ini, append = TRUE)
                 write(paste(""), file = file.ini, append = TRUE)
                 write.table(study.indep_par, file = file.ini, 
-                  append = TRUE, col.name = FALSE)
+                  append = TRUE, col.names = FALSE)
                 write(paste(""), file = file.ini, append = TRUE)
                 write(paste(""), file = file.ini, append = TRUE)
                 write(paste("______________________________________________________"), 
@@ -253,7 +253,7 @@ function (first.run, random, param, cond.Ind, rs, GS_se, GS_sp,
                 write(paste(""), file = file.ini, append = TRUE)
                 write(paste(""), file = file.ini, append = TRUE)
                 write.table(study.ref_std, file = file.ini, append = TRUE, 
-                  col.name = FALSE)
+                  col.names = FALSE)
                 write(paste(""), file = file.ini, append = TRUE)
                 write(paste(""), file = file.ini, append = TRUE)
                 if (sco == TRUE) {
@@ -373,13 +373,13 @@ function (first.run, random, param, cond.Ind, rs, GS_se, GS_sp,
                     rownames(study.ref_std) = c("init.a1", "init.a0")
                   }
                   write.table(study.dep_par, file = file.ini, 
-                    row.name = FALSE)
+                    row.names = FALSE)
                   write(paste("______________________________________________________"), 
                     file = file.ini, append = TRUE)
                   write(paste(""), file = file.ini, append = TRUE)
                   write(paste(""), file = file.ini, append = TRUE)
                   write.table(study.indep_par, file = file.ini, 
-                    append = TRUE, col.name = FALSE)
+                    append = TRUE, col.names = FALSE)
                   write(paste(""), file = file.ini, append = TRUE)
                   write(paste(""), file = file.ini, append = TRUE)
                   write(paste("______________________________________________________"), 
@@ -387,7 +387,7 @@ function (first.run, random, param, cond.Ind, rs, GS_se, GS_sp,
                   write(paste(""), file = file.ini, append = TRUE)
                   write(paste(""), file = file.ini, append = TRUE)
                   write.table(study.ref_std, file = file.ini, 
-                    append = TRUE, col.name = FALSE)
+                    append = TRUE, col.names = FALSE)
                   write(paste(""), file = file.ini, append = TRUE)
                   write(paste(""), file = file.ini, append = TRUE)
                 }
@@ -427,13 +427,13 @@ function (first.run, random, param, cond.Ind, rs, GS_se, GS_sp,
                     rownames(study.ref_std) = c("init.a1", "init.a0")
                   }
                   write.table(study.dep_par, file = file.ini, 
-                    row.name = FALSE)
+                    row.names = FALSE)
                   write(paste("______________________________________________________"), 
                     file = file.ini, append = TRUE)
                   write(paste(""), file = file.ini, append = TRUE)
                   write(paste(""), file = file.ini, append = TRUE)
                   write.table(study.indep_par, file = file.ini, 
-                    append = TRUE, col.name = FALSE)
+                    append = TRUE, col.names = FALSE)
                   write(paste(""), file = file.ini, append = TRUE)
                   write(paste(""), file = file.ini, append = TRUE)
                   write(paste("______________________________________________________"), 
@@ -441,7 +441,7 @@ function (first.run, random, param, cond.Ind, rs, GS_se, GS_sp,
                   write(paste(""), file = file.ini, append = TRUE)
                   write(paste(""), file = file.ini, append = TRUE)
                   write.table(study.ref_std, file = file.ini, 
-                    append = TRUE, col.name = FALSE)
+                    append = TRUE, col.names = FALSE)
                   write(paste(""), file = file.ini, append = TRUE)
                   write(paste(""), file = file.ini, append = TRUE)
                 }
@@ -547,13 +547,13 @@ function (first.run, random, param, cond.Ind, rs, GS_se, GS_sp,
                         "init.a0", "init.b1", "init.b0")
                     }
                     write.table(study.dep_par, file = file.ini, 
-                      row.name = FALSE)
+                      row.names = FALSE)
                     write(paste("______________________________________________________"), 
                       file = file.ini, append = TRUE)
                     write(paste(""), file = file.ini, append = TRUE)
                     write(paste(""), file = file.ini, append = TRUE)
                     write.table(study.indep_par, file = file.ini, 
-                      append = TRUE, col.name = FALSE)
+                      append = TRUE, col.names = FALSE)
                     write(paste(""), file = file.ini, append = TRUE)
                     write(paste(""), file = file.ini, append = TRUE)
                     write(paste("______________________________________________________"), 
@@ -561,7 +561,7 @@ function (first.run, random, param, cond.Ind, rs, GS_se, GS_sp,
                     write(paste(""), file = file.ini, append = TRUE)
                     write(paste(""), file = file.ini, append = TRUE)
                     write.table(study.ref_std, file = file.ini, 
-                      append = TRUE, col.name = FALSE)
+                      append = TRUE, col.names = FALSE)
                     write(paste(""), file = file.ini, append = TRUE)
                     write(paste(""), file = file.ini, append = TRUE)
                   }
@@ -614,13 +614,13 @@ function (first.run, random, param, cond.Ind, rs, GS_se, GS_sp,
                         "init.a0", "init.b1", "init.b0")
                     }
                     write.table(study.dep_par, file = file.ini, 
-                      row.name = FALSE)
+                      row.names = FALSE)
                     write(paste("______________________________________________________"), 
                       file = file.ini, append = TRUE)
                     write(paste(""), file = file.ini, append = TRUE)
                     write(paste(""), file = file.ini, append = TRUE)
                     write.table(study.indep_par, file = file.ini, 
-                      append = TRUE, col.name = FALSE)
+                      append = TRUE, col.names = FALSE)
                     write(paste(""), file = file.ini, append = TRUE)
                     write(paste(""), file = file.ini, append = TRUE)
                     write(paste("______________________________________________________"), 
@@ -628,7 +628,7 @@ function (first.run, random, param, cond.Ind, rs, GS_se, GS_sp,
                     write(paste(""), file = file.ini, append = TRUE)
                     write(paste(""), file = file.ini, append = TRUE)
                     write.table(study.ref_std, file = file.ini, 
-                      append = TRUE, col.name = FALSE)
+                      append = TRUE, col.names = FALSE)
                     write(paste(""), file = file.ini, append = TRUE)
                     write(paste(""), file = file.ini, append = TRUE)
                   }

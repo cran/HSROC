@@ -24,7 +24,7 @@ simdata(N, n, n.random = "FALSE", sub_rs = NULL, prev, se_ref = NULL,
  \item{range.T}{a vector of length 2 specifiying a range of values for the individual cut-off \eqn{\theta_i}{theta_i}.  See details for further explanations.  }	
  \item{L}{single numeric value, the overall difference in mean values (diagnostic accuracy) on the continuous index test result comparing the diseased group and the non-diseased group.}	
  \item{range.L}{a vector of length 2 specifiying a range of values for the individual difference in mean values (diagnostic accuracy) on the continuous index test result comparing the diseased group and the non-diseased group \eqn{\alpha_i}{alpha_i}.  See details for further explanations.  }
- \item{sd_t}{single numeric value, the between study standard deviation in the cut-off \eqn{\theta_i}{theta_i}.   If the argument is specified as \code{NULL}, then the model assumes the same cut-off across all studies (\eqn{\Theta}{THETA}).  }	
+ \item{sd_t}{single numeric value, the between study standard deviation in the cut-off \eqn{\theta_i}{theta_i}.  }	
  \item{sd_a}{single numeric value, the between study standard deviation in the mean value of the index test disease group \eqn{\alpha_i}{alpha_i}  }	
  \item{b}{single numeric value, the ratio of the continuous standard deviation of the index test results on patients with the disease compared to patients without the disease. }	
  \item{path}{a character string pointing to the directory where the simulated data will be saved to.  }

@@ -31,7 +31,7 @@ HSROC(data, iter.num, init = NULL, sub_rs=NULL,
   \item{prior_LAMBDA}{a vector with 2 components specifying the minimum and maximum values for the difference in mean values (diagnostic accuracy) among disease positive and negative groups based on prior information.  The default value is \code{c(-3,3)} implying a \eqn{U(-3,3)}{U(-3,3)}.}
   \item{prior_THETA}{a vector with 2 components specifying the minimum and maximum values for the overall mean cut-off value for defining a positive test based on prior information.  The default value is \code{c(-1.5,1.5)} implying a \eqn{U(-1.5,1.5)}{U(-1.5,1.5)}.}
   \item{prior_sd_alpha}{a list with 3 components.  The first 2 components are specifying the minimum and maximum values for the between study standard deviation in the difference in  mean values of the disease positive and negative groups in the \eqn{i^{th}}{ith} study, \eqn{\alpha_i}{alpha_i}, based on prior information.  The third component determine whether we want the prior to be on the standard deviation (sd) or the variance (v).  The default value is \code{list(0,2,"sd")} implying a \eqn{U(0,2)}{U(0,2)} prior. }
-  \item{prior_sd_theta}{a list with 3 components. The first 2 components are specifying the minimum and maximum values for the between study standard deviation in the cut-off, \eqn{\theta_i}{theta_i}, in the \eqn{i^{th}}{ith} study based on prior information.  The third component determine whether we want the prior to be on the standard deviation (s) or the variance (v). The default value is \code{list(0,2,"sd")} implying a \eqn{U(0,2)}{U(0,2)} prior.  If the first 2 components of the list are zero, that is \code{list(0,0,"sd")}, then the model assumes the same cut-off across all studies (\eqn{\Theta}{THETA}).  This special case won't return any estimates for \eqn{\theta_i}{theta_i} and \eqn{\sigma_{\theta}}{sigma_theta} }
+  \item{prior_sd_theta}{a list with 3 components. The first 2 components are specifying the minimum and maximum values for the between study standard deviation in the cut-off, \eqn{\theta_i}{theta_i}, in the \eqn{i^{th}}{ith} study based on prior information.  The third component determine whether we want the prior to be on the standard deviation (s) or the variance (v). The default value is \code{list(0,2,"sd")} implying a \eqn{U(0,2)}{U(0,2)} prior.  }
   \item{prior_beta}{a vector with 2 components specifying the minimum and maximum values for the logarithm of the ratio of the standard deviation of test results among patients with and without the disease, based on prior belief.  This parameter is assumed to be constant across studies.  The default value is \code{c(-0.75,0.75)} implying a \eqn{U(-0..75,0.75)}{U(-0.75,0.75)}.  If the argument is (\code{NULL}) the function assumes a range of (-log( (LAMBDA.up/3) + 1 ) , log( (LAMBDA.up/3) + 1 ) ), where LAMBDA.up is the upper limit of \code{prior.LAMBDA}. }
 
 
@@ -102,10 +102,10 @@ C. M. Rutter and C. A. Gatsonis. \emph{A hierarchical regression approach to met
 #===============================================================
 
 
-#There were four different reference standards for the In.house dataset.  
+#There were three different reference standards for the In.house dataset.  
 #The first reference standard was used in study 1 and 2, 
 #the second was used in studies 3 and 4 and the third in study 5 to 12. 
-REFSTD = list(4, 1:2, 3:4, 5:11) 
+REFSTD = list(3, 1:2, 3:4, 5:11) 
 
 #===============================================================
 #TO SET UP DATA AND INITIAL VALUES
@@ -145,21 +145,27 @@ C2.a = rep(0.9, 3) ;	C2.b = rep(1, 3)
 #TO RUN GIBBS SAMPLER
 #===============================================================
 
-\dontrun{
-estimates = HSROC(data=In.house, init=init, iter.num=50000,  
-   prior.SEref=c(S2.a,S2.b), prior.SPref=c (C2.a,C2.b), sub_rs=REFSTD) 
 
+
+\dontrun{
+
+set.seed(10)
+estimates = HSROC(data=In.house, init=init, iter.num=5000,  
+   prior.SEref=c(S2.a,S2.b), prior.SPref=c (C2.a,C2.b), sub_rs=REFSTD) 
 
 #Putting prior information on sigma_alpha^2 (sigma_alphs squared) 
 #instead of sigma_alpha
-estimates = HSROC(data=In.house, init=init, iter.num=50000,  
+set.seed(10)
+estimates = HSROC(data=In.house, init=init, iter.num=5000,  
    prior.SEref=c(S2.a,S2.b), prior.SPref=c (C2.a,C2.b), 
 		sub_rs=REFSTD, prior_sd_alpha = list(0,2,"v"))
 
-#Let's assume the same cut-off across all studies
-estimates = HSROC(data=In.house, init=init, iter.num=50000,  
+
+#Letting the function select randomly its own initial values
+set.seed(10)
+estimates = HSROC(data=In.house, iter.num=5000,  
    prior.SEref=c(S2.a,S2.b), prior.SPref=c (C2.a,C2.b), 
-		sub_rs=REFSTD, prior_sd_theta = list(0,0,"sd"))
+		sub_rs=REFSTD)
 
 }
 }
