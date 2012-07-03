@@ -5,6 +5,12 @@ function (data, iter.num, init = NULL, sub_rs = NULL, first.run = TRUE,
         1.5), prior_sd_alpha = list(0, 2, "sd"), prior_sd_theta = list(0, 
         2, "sd"), prior_beta = c(-0.75, 0.75)) 
 {
+    if (file.exists("alpha.txt") == TRUE) {
+        print("There are results from a previous run of the Gibbs sampler in the current working directory")
+        print("Would you like to overwrite the results?")
+        switch(menu(c("Yes", "No")), c(files.remove(), print("Please call HSROC() again. \n")), 
+            NULL)
+    }
     if (missing(data)) 
         stop("You must provide a valid 'data' argument", call. = FALSE)
     N = length(data[, 1])
@@ -13,7 +19,7 @@ function (data, iter.num, init = NULL, sub_rs = NULL, first.run = TRUE,
         print("Warning")
         print("You might come into trouble regarding memory allocation if you are using 32-bit version")
         print("Please select one of the options below")
-        switch(menu(c("Abord and choose fewer iterations", "Ignore this warning")), 
+        switch(menu(c("Abord and select fewer iterations", "Ignore this warning")), 
             return("Please select fewer iterations"), NULL)
     }
     if (missing(iter.num) | iter.num <= 0) {
@@ -447,7 +453,6 @@ function (data, iter.num, init = NULL, sub_rs = NULL, first.run = TRUE,
         beta.a, beta.b, prior.THETA.lower, prior.THETA.upper, 
         low.disp.alpha, up.disp.alpha, low.disp.theta, up.disp.theta, 
         prior_sig_alpha, prior_sig_theta, refresh)
-    Restore(gibbs, Gold_Std)
     if (Gold_Std == TRUE) {
         file.remove(file.C2)
         file.remove(file.S2)

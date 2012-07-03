@@ -2,11 +2,11 @@ Package: HSROC
 Type: Package
 Title: Joint meta-analysis of diagnostic test sensitivity and
         specificity with or without a gold standard reference test
-Version: 2.0.5
-Date: 2012-03-26
+Version: 2.1.0
+Date: 2012-07-03
 Author: Ian Schiller and Nandini Dendukuri
 Maintainer: <ian.schiller@clinepi.mcgill.ca>
-Depends: R (>= 2.5.0), lattice, coda, MASS, MCMCpack
+Depends: R (>= 2.15.0), lattice, coda, MASS, MCMCpack
 Description: This package implements a model for joint meta-analysis of
         sensitivity and specificity of the diagnostic test under
         evaluation, while taking into account the possibly imperfect
@@ -19,6 +19,6 @@ Description: This package implements a model for joint meta-analysis of
 License: GPL (>= 2)
 URL: http://www.nandinidendukuri.com/
 Encoding: latin1
-Packaged: 2012-03-26 17:58:23 UTC; ian.schiller
+Packaged: 2012-07-03 14:10:30 UTC; Ian.Schiller
 Repository: CRAN
-Date/Publication: 2012-03-26 18:13:20
+Date/Publication: 2012-07-03 14:56:46

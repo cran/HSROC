@@ -468,9 +468,9 @@ extern "C"{
         // REPEAT THE PI, S1 and C1 VECTORS
         //*****************************************************
         int count = 0;
-        double pi_rep[*total];
-        double S1_rep[*total];
-        double C1_rep[*total];
+        double *pi_rep = new double [*total];
+        double *S1_rep = new double [*total];
+        double *C1_rep = new double [*total];
         for(int i=0; i<*n_studies ; i++)
         {
             int N = study_samplesize[i];
@@ -484,8 +484,8 @@ extern "C"{
             }
         }
         int count2 = 0;
-        double S2_rep[*total];
-        double C2_rep[*total];
+        double *S2_rep = new double [*total];
+        double *C2_rep = new double [*total];
         for(int i2=0; i2<*refstd ; i2++)
         {
             int N2 = numb_refstd[i2];
@@ -502,7 +502,7 @@ extern "C"{
         //*****************************************************
         // Calculation of prob.Yj
         //*****************************************************
-        double res_probYij[*total];
+        double *res_probYij = new double [*total];
         for(int i3=0; i3<*total; i3++)
 		{
             res_probYij[i3] = Prob_cpp(t1[i3], t2[i3], pi_rep[i3], S1_rep[i3], S2_rep[i3], C1_rep[i3], C2_rep[i3]);
@@ -513,7 +513,7 @@ extern "C"{
         //*****************************************************
         // Calculation of Y.ij
         //*****************************************************
-        double res_Yij[*total];
+        double *res_Yij = new double [*total];
         GetRNGstate();
         for(int i4=0; i4<*total; i4++)
         {
@@ -528,12 +528,12 @@ extern "C"{
         //*****************************************************
         // CONDITIONAL DISTRIBUTION OF PI
         int count5=0;
-        double resY1[*n_studies];
-        double resY2[*n_studies];
-        double resY3[*n_studies];
-        double resY4[*n_studies];
-        double resPI_a[*n_studies];
-        double resPI_b[*n_studies];
+        double *resY1 = new double [*n_studies];
+        double *resY2 = new double [*n_studies];
+        double *resY3 = new double [*n_studies];
+        double *resY4 = new double [*n_studies];
+        double *resPI_a = new double [*n_studies];
+        double *resPI_b = new double [*n_studies];
         
         //resY1[i5] = resY2[i5] = resY3[i5] = resY4[i5] = resPI_a[i5] = 0.0;
         for(int i5=0; i5<*n_studies; i5++)
@@ -563,7 +563,7 @@ extern "C"{
             if(!finite(vec_pi[i6]))
             {
                 Rprintf("Undefined real result. \n");
-                Rprintf("Please set 'first.run' argument to 'FALSE' and call HSROC() again.\n");
+                Rprintf("Please check your prior distributions and initial values and call HSROC() again.\n");
                 condition = 0;
                 *break_point = 5;
                 break;
@@ -584,7 +584,7 @@ extern "C"{
         // *****************************************************
         // CONDITIONAL DISTRIBUTION OF S2 & C2.  WE WILL ASSUME A NON GOLD STARDARD WITH MULTIPLE REFERENCE STADARDS
         // *****************************************************
-        double res_Xij[*total];            
+        double *res_Xij = new double [*total];            
         for(int i2a=0; i2a<*total; i2a++)
         {
             res_Xij[i2a] = (1.0 - res_Yij[i2a]);
@@ -593,14 +593,14 @@ extern "C"{
             //Xij_file << endl;
 
         int count3=0;
-        double resX1[*refstd];
-        double resX2[*refstd];
-        double resX3[*refstd];
-        double resX4[*refstd];
-        double resYY1[*refstd];
-        double resYY2[*refstd];
-        double resYY3[*refstd];
-        double resYY4[*refstd];
+        double *resX1 = new double [*refstd];
+        double *resX2 = new double [*refstd];
+        double *resX3 = new double [*refstd];
+        double *resX4 = new double [*refstd];
+        double *resYY1 = new double [*refstd];
+        double *resYY2 = new double [*refstd];
+        double *resYY3 = new double [*refstd];
+        double *resYY4 = new double [*refstd];
         for(int i6=0; i6<*refstd; i6++)
         {
             int rssize2 = numb_refstd[i6];
@@ -673,10 +673,10 @@ extern "C"{
         {
 */     
 
-        double a_se2[*refstd];
-        double b_se2[*refstd];
-        double a_sp2[*refstd];
-        double b_sp2[*refstd];
+        double *a_se2 = new double [*refstd];
+        double *b_se2 = new double [*refstd];
+        double *a_sp2 = new double [*refstd];
+        double *b_sp2 = new double [*refstd];
         for(int i9=0; i9<*refstd; i9++)
         {
             a_se2[i9] = resYY1[i9] + resYY4[i9] + sens2_alpha[i9];
@@ -693,7 +693,7 @@ extern "C"{
             if(!finite(vec_S2[i9a]))
             {
                 Rprintf("Undefined real result. \n");
-                Rprintf("Please set 'first.run' argument to 'FALSE' and call HSROC() again.\n");
+                Rprintf("Please check your prior distributions and initial values and call HSROC() again.\n");
                 condition = 0;
                 *break_point = 11;
                 break;
@@ -715,7 +715,7 @@ extern "C"{
             if(!finite(vec_C2[i9b]))
             {
                 Rprintf("Undefined real result. \n");
-                Rprintf("Please set 'first.run' argument to 'FALSE' and call HSROC() again.\n");
+                Rprintf("Please check your prior distributions and initial values and call HSROC() again.\n");
                 condition = 0;
                 *break_point = 12;
                 break;
@@ -745,11 +745,11 @@ extern "C"{
         // *****************************************************
         // REPEAT THE alpha AND theta VECTORS
         int counter_iv = 0;
-        double alpha_rep[*total];
-        double theta_rep[*total];
-        double mu[*total];
-        double sd[*total];
-        double rij[*total];
+        double *alpha_rep = new double [*total];
+        double *theta_rep = new double [*total];
+        double *mu = new double [*total];
+        double *sd = new double [*total];
+        double *rij = new double [*total];
         GetRNGstate();
         for(int iv=0; iv<*n_studies ; iv++)
         {
@@ -772,8 +772,8 @@ extern "C"{
         // CONDITIONAL DISTRIBUTION OF theta
         // *****************************************************
         int count10 = 0;
-        double lower_t[*n_studies];
-        double upper_t[*n_studies];
+        double *lower_t = new double [*n_studies];
+        double *upper_t = new double [*n_studies];
         for(int i10 = 0; i10<*n_studies; i10++)
         {
             int size_10 = study_samplesize[i10] ;
@@ -804,7 +804,7 @@ extern "C"{
             if(!finite(vec_theta[i11]))
             {
                 Rprintf("Undefined real result. \n");
-                Rprintf("Please set 'first.run' argument to 'FALSE' and call HSROC() again.\n");
+                Rprintf("Please check your prior distributions and initial values and call HSROC() again.\n");
                 condition = 0;
                 *break_point = 2;
                 break;
@@ -812,7 +812,7 @@ extern "C"{
         }
         if(condition == 0) {break;}  //break the outer loop because of undefined real results
         //theta_file << endl;
-        PutRNGstate();
+        PutRNGstate(); 
         // *****************************************************
 
 
@@ -820,8 +820,8 @@ extern "C"{
         // CONDITIONAL DISTRIBUTION OF alpha
         // *****************************************************
         int count12 = 0;
-        double A[*n_studies];
-        double B[*n_studies];
+        double *A = new double [*n_studies];
+        double *B = new double [*n_studies];
         for (int i12 = 0; i12 < *n_studies; i12++)
         {
             double partial_A = 0.0;
@@ -847,7 +847,7 @@ extern "C"{
             if(!finite(vec_alpha[i14]))
             {
                 Rprintf("Undefined real result. \n");
-                Rprintf("Please set 'first.run' argument to 'FALSE' and call HSROC() again.\n");
+                Rprintf("Please check your prior distributions and initial values and call HSROC() again.\n");
                 condition = 0;
                 *break_point = 1;
                 break;
@@ -870,7 +870,7 @@ extern "C"{
         if(!finite(*vec_LAMBDA))
         {
             Rprintf("Undefined real result. \n");
-            Rprintf("Please set 'first.run' argument to 'FALSE' and call HSROC() again.\n");
+            Rprintf("Please check your prior distributions and initial values and call HSROC() again.\n");
             *break_point = 6;
             break;
         }
@@ -892,7 +892,7 @@ extern "C"{
         if(!finite(*vec_beta))
         {
             Rprintf("Undefined real result. \n");
-            Rprintf("Please set 'first.run' argument to 'FALSE' and call HSROC() again.\n");
+            Rprintf("Please check your prior distributions and initial values and call HSROC() again.\n");
             *break_point = 10;
             break;
         }        
@@ -911,7 +911,7 @@ extern "C"{
         if(!finite(*vec_CTHETA))
         {
             Rprintf("Undefined real result. \n");
-            Rprintf("Please set 'first.run' argument to 'FALSE' and call HSROC() again.\n");
+            Rprintf("Please check your prior distributions and initial values and call HSROC() again.\n");
             *break_point = 8;
             break;
         }
@@ -940,7 +940,7 @@ extern "C"{
             if(!finite(*vec_sigma_alpha))
             {
                 Rprintf("Undefined real result. \n");
-                Rprintf("Please set 'first.run' argument to 'FALSE' and call HSROC() again.\n");
+                Rprintf("Please check your prior distributions and initial values and call HSROC() again.\n");
                 *break_point = 7;
                 break;
             }
@@ -963,7 +963,7 @@ extern "C"{
             if(!finite(*vec_sigma_alpha))
             {
                 Rprintf("Undefined real result. \n");
-                Rprintf("Please set 'first.run' argument to 'FALSE' and call HSROC() again.\n");
+                Rprintf("Please check your prior distributions and initial values and call HSROC() again.\n");
                 *break_point = 7;
                 break;
             }
@@ -986,7 +986,7 @@ extern "C"{
             if(!finite(*vec_sigma_alpha))
             {
                 Rprintf("Undefined real result. \n");
-                Rprintf("Please set 'first.run' argument to 'FALSE' and call HSROC() again.\n");
+                Rprintf("Please check your prior distributions and initial values and call HSROC() again.\n");
                 *break_point = 7;
                 break;
             }
@@ -1020,7 +1020,7 @@ extern "C"{
             if(!finite(*vec_sigma_theta))
             {
                 Rprintf("Undefined real result. \n");
-                Rprintf("Please set 'first.run' argument to 'FALSE' and call HSROC() again.\n");
+                Rprintf("Please check your prior distributions and initial values and call HSROC() again.\n");
                 *break_point = 9;
                 break;
             }
@@ -1043,7 +1043,7 @@ extern "C"{
             if(!finite(*vec_sigma_theta))
             {
                 Rprintf("Undefined real result. \n");
-                Rprintf("Please set 'first.run' argument to 'FALSE' and call HSROC() again.\n");
+                Rprintf("Please check your prior distributions and initial values and call HSROC() again.\n");
                 *break_point = 9;
                 break;
             }
@@ -1066,7 +1066,7 @@ extern "C"{
             if(!finite(*vec_sigma_theta))
             {
                 Rprintf("Undefined real result. \n");
-                Rprintf("Please set 'first.run' argument to 'FALSE' and call HSROC() again.\n");
+                Rprintf("Please check your prior distributions and initial values and call HSROC() again.\n");
                 *break_point = 9;
                 break;
             }
@@ -1087,7 +1087,7 @@ extern "C"{
             if(!finite(vec_S1[i15]))
             {
                 Rprintf("Undefined real result. \n");
-                Rprintf("Please set 'first.run' argument to 'FALSE' and call HSROC() again.\n");
+                Rprintf("Please check your prior distributions and initial values and call HSROC() again.\n");
                 condition = 0;
                 *break_point = 3;
                 break;
@@ -1105,7 +1105,7 @@ extern "C"{
             if(!finite(vec_C1[i16]))
             {
                 Rprintf("Undefined real result. \n");
-                Rprintf("Please set 'first.run' argument to 'FALSE' and call HSROC() again.\n");
+                Rprintf("Please check your prior distributions and initial values and call HSROC() again.\n");
                 condition = 0;
                 *break_point = 4;
                 break;
@@ -1184,6 +1184,46 @@ extern "C"{
         }
 
 
+
+
+
+        // FREE MEMORY 
+        delete pi_rep ;
+        delete S1_rep ;
+        delete C1_rep ;
+        delete S2_rep ;
+        delete C2_rep ;
+        delete res_probYij ;
+        delete res_Yij ;
+        delete resY1 ;
+        delete resY2 ;
+        delete resY3 ;
+        delete resY4 ;
+        delete resPI_a ;
+        delete resPI_b ;
+        delete res_Xij ;
+        delete resX1 ;
+        delete resX2 ;
+        delete resX3 ;
+        delete resX4 ;
+        delete resYY1 ;
+        delete resYY2 ;
+        delete resYY3 ;
+        delete resYY4 ;
+        delete a_se2 ;
+        delete b_se2 ;
+        delete a_sp2 ;
+        delete b_sp2 ;
+        delete alpha_rep ; 
+        delete theta_rep ;
+        delete mu ;
+        delete sd ;
+        delete rij ;
+        delete lower_t ;
+        delete upper_t ;
+        delete A ;
+        delete B ;
+        
 
 
 	}//big_loop

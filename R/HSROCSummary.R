@@ -1,9 +1,13 @@
 HSROCSummary <-
 function (data, burn_in = 0, iter.keep = NULL, Thin = 1, sub_rs = NULL, 
-    point_estimate = c("median", "mean"), path = getwd(), chain = NULL, 
-    tv = NULL, digit = 6, print_plot = FALSE) 
+    point_estimate = c("median", "mean"), summary.path = getwd(), 
+    chain = getwd(), tv = NULL, digit = 6, print_plot = FALSE, 
+    plot.ind.studies = TRUE, conf_region = TRUE, predict_region = TRUE, 
+    col.pooled.estimate = "red", col.predict.region = "blue", 
+    lty.conf.region = "dotdash", lty.predict.region = "dotted", 
+    region_level = 0.95, trunc_low = 0.025, trunc_up = 0.025) 
 {
-    setwd(path)
+    setwd(summary.path)
     if (missing(data)) 
         stop("You must provide a valid 'data' argument", call. = FALSE)
     N = length(data[, 1])
@@ -48,7 +52,7 @@ function (data, burn_in = 0, iter.keep = NULL, Thin = 1, sub_rs = NULL,
     prior.exist = file.exists(file.prior)
     if (prior.exist == FALSE) {
         stop(paste("Make sure the \"", file.prior, "\" file created by the 'HSROC' function is in the \"", 
-            path, "\" working directory. \n", sep = ""))
+            summary.path, "\" working directory. \n", sep = ""))
     }
     prior = read.table(file.prior, header = TRUE)
     model = read.table("model.txt", header = FALSE)
@@ -660,7 +664,7 @@ function (data, burn_in = 0, iter.keep = NULL, Thin = 1, sub_rs = NULL,
             }
         }
     }
-    setwd(path)
+    setwd(summary.path)
     alpha = as.mcmc(alpha)
     THETA = as.mcmc(THETA)
     LAMBDA = as.mcmc(LAMBDA)
@@ -686,69 +690,69 @@ function (data, burn_in = 0, iter.keep = NULL, Thin = 1, sub_rs = NULL,
     iter.size = length(beta)
     theta.est = apply(as.matrix(theta), 2, point_estimate)
     theta.HPD = HPDinterval(theta)
-    theta.sd = sd(theta)
+    theta.sd = apply(theta, 2, sd)
     sigma.theta.est = apply(as.matrix(sigma.theta), 2, point_estimate)
     sigma.theta.HPD = HPDinterval(sigma.theta)
-    sigma.theta.sd = sd(sigma.theta)
+    sigma.theta.sd = apply(sigma.theta, 2, sd)
     alpha.est = apply(as.matrix(alpha), 2, point_estimate)
     alpha.HPD = HPDinterval(alpha)
-    alpha.sd = sd(alpha)
+    alpha.sd = apply(alpha, 2, sd)
     THETA.est = apply(as.matrix(THETA), 2, point_estimate)
     THETA.HPD = HPDinterval(THETA)
-    THETA.sd = sd(THETA)
+    THETA.sd = apply(THETA, 2, sd)
     LAMBDA.est = apply(as.matrix(LAMBDA), 2, point_estimate)
     LAMBDA.HPD = HPDinterval(LAMBDA)
-    LAMBDA.sd = sd(LAMBDA)
+    LAMBDA.sd = apply(LAMBDA, 2, sd)
     beta.est = apply(as.matrix(beta), 2, point_estimate)
     beta.HPD = HPDinterval(beta)
-    beta.sd = sd(beta)
+    beta.sd = apply(beta, 2, sd)
     PI.est = apply(as.matrix(PI), 2, point_estimate)
     PI.HPD = HPDinterval(PI)
-    PI.sd = sd(PI)
+    PI.sd = apply(PI, 2, sd)
     sigma.alpha.est = apply(as.matrix(sigma.alpha), 2, point_estimate)
     sigma.alpha.HPD = HPDinterval(sigma.alpha)
-    sigma.alpha.sd = sd(sigma.alpha)
+    sigma.alpha.sd = apply(sigma.alpha, 2, sd)
     S1.est = apply(as.matrix(S1), 2, point_estimate)
     S1.HPD = HPDinterval(S1)
-    S1.sd = sd(S1)
+    S1.sd = apply(S1, 2, sd)
     C1.est = apply(as.matrix(C1), 2, point_estimate)
     C1.HPD = HPDinterval(C1)
-    C1.sd = sd(C1)
+    C1.sd = apply(C1, 2, sd)
     S1_new.est = apply(as.matrix(S1_new), 2, point_estimate)
     S1_new.HPD = HPDinterval(S1_new)
-    S1_new.sd = sd(S1_new)
+    S1_new.sd = apply(S1_new, 2, sd)
     C1_new.est = apply(as.matrix(C1_new), 2, point_estimate)
     C1_new.HPD = HPDinterval(C1_new)
-    C1_new.sd = sd(C1_new)
+    C1_new.sd = apply(C1_new, 2, sd)
     C_overall.est = apply(as.matrix(C_overall), 2, point_estimate)
     C_overall.HPD = HPDinterval(C_overall)
-    C_overall.sd = sd(C_overall)
+    C_overall.sd = apply(C_overall, 2, sd)
     S_overall.est = apply(as.matrix(S_overall), 2, point_estimate)
     S_overall.HPD = HPDinterval(S_overall)
-    S_overall.sd = sd(S_overall)
+    S_overall.sd = apply(S_overall, 2, sd)
     if (condInd == TRUE & Gold_Std == FALSE & model == 1) {
         if (Gold_se == TRUE & Gold_sp == FALSE) {
             C2 = as.mcmc(C2)
             C2.est = apply(as.matrix(C2), 2, point_estimate)
             C2.HPD = HPDinterval(C2)
-            C2.sd = sd(C2)
+            C2.sd = apply(C2, 2, sd)
         }
         else {
             if (Gold_sp == TRUE & Gold_se == FALSE) {
                 S2 = as.mcmc(S2)
                 S2.est = apply(as.matrix(S2), 2, point_estimate)
                 S2.HPD = HPDinterval(S2)
-                S2.sd = sd(S2)
+                S2.sd = apply(S2, 2, sd)
             }
             else {
                 S2 = as.mcmc(S2)
                 C2 = as.mcmc(C2)
                 S2.est = apply(as.matrix(S2), 2, point_estimate)
                 S2.HPD = HPDinterval(S2)
-                S2.sd = sd(S2)
+                S2.sd = apply(S2, 2, sd)
                 C2.est = apply(as.matrix(C2), 2, point_estimate)
                 C2.HPD = HPDinterval(C2)
-                C2.sd = sd(C2)
+                C2.sd = apply(C2, 2, sd)
             }
         }
     }
@@ -760,16 +764,16 @@ function (data, burn_in = 0, iter.keep = NULL, Thin = 1, sub_rs = NULL,
             C2 = as.mcmc(C2)
             a1.est = apply(as.matrix(a1), 2, point_estimate)
             a1.HPD = HPDinterval(a1)
-            a1.sd = sd(a1)
+            a1.sd = apply(a1, 2, sd)
             a0.est = apply(as.matrix(a0), 2, point_estimate)
             a0.HPD = HPDinterval(a0)
-            a0.sd = sd(a0)
+            a0.sd = apply(a0, 2, sd)
             S2.est = apply(as.matrix(S2), 2, point_estimate)
             S2.HPD = HPDinterval(S2)
-            S2.sd = sd(S2)
+            S2.sd = apply(S2, 2, sd)
             C2.est = apply(as.matrix(C2), 2, point_estimate)
             C2.HPD = HPDinterval(C2)
-            C2.sd = sd(C2)
+            C2.sd = apply(C2, 2, sd)
         }
         else {
             if (condInd == FALSE) {
@@ -783,28 +787,28 @@ function (data, burn_in = 0, iter.keep = NULL, Thin = 1, sub_rs = NULL,
                 C2 = as.mcmc(C2)
                 a1.est = apply(as.matrix(a1), 2, point_estimate)
                 a1.HPD = HPDinterval(a1)
-                a1.sd = sd(a1)
+                a1.sd = apply(a1, 2, sd)
                 a0.est = apply(as.matrix(a0), 2, point_estimate)
                 a0.HPD = HPDinterval(a0)
-                a0.sd = sd(a0)
+                a0.sd = apply(a0, 2, sd)
                 b1.est = apply(as.matrix(b1), 2, point_estimate)
                 b1.HPD = HPDinterval(b1)
-                b1.sd = sd(b1)
+                b1.sd = apply(b1, 2, sd)
                 b0.est = apply(as.matrix(b0), 2, point_estimate)
                 b0.HPD = HPDinterval(b0)
-                b0.sd = sd(b0)
+                b0.sd = apply(b0, 2, sd)
                 d1.est = apply(as.matrix(d1), 2, point_estimate)
                 d1.HPD = HPDinterval(d1)
-                d1.sd = sd(d1)
+                d1.sd = apply(d1, 2, sd)
                 d0.est = apply(as.matrix(d0), 2, point_estimate)
                 d0.HPD = HPDinterval(d0)
-                d0.sd = sd(d0)
+                d0.sd = apply(d0, 2, sd)
                 S2.est = apply(as.matrix(S2), 2, point_estimate)
                 S2.HPD = HPDinterval(S2)
-                S2.sd = sd(S2)
+                S2.sd = apply(S2, 2, sd)
                 C2.est = apply(as.matrix(C2), 2, point_estimate)
                 C2.HPD = HPDinterval(C2)
-                C2.sd = sd(C2)
+                C2.sd = apply(C2, 2, sd)
             }
         }
     }
@@ -1201,7 +1205,7 @@ function (data, burn_in = 0, iter.keep = NULL, Thin = 1, sub_rs = NULL,
             nb_chains - (burn_in) * nb_chains)/Thin, 0)), file = test.file, 
             append = TRUE)
         write(paste(""), file = test.file, append = TRUE)
-        write(paste("File location : ", path), file = test.file, 
+        write(paste("File location : ", summary.path), file = test.file, 
             append = TRUE)
         write(paste(""), file = test.file, append = TRUE)
         write(paste("Date :", Sys.time()), file = test.file, 
@@ -2694,144 +2698,79 @@ function (data, burn_in = 0, iter.keep = NULL, Thin = 1, sub_rs = NULL,
         Parameter[, 9] <- C1_new
         if (print_plot == TRUE) {
             if (is.null(chain) == FALSE) {
-                file.pdf5 = paste("Trace plots for N =", round((iter.num * 
-                  nb_chains - (burn_in) * nb_chains)/Thin, 0), 
-                  ".pdf")
-                pdf(file.pdf5, paper = "a4", height = 20)
-                param = c("theta", "alpha", "PI", "S1", "C1")
-                Param = c("Capital Theta", "Capital Lambda", 
-                  "beta", "~sigma[alpha]", "~sigma[theta]", "S Overall", 
-                  "C Overall", "S1_new", "C1_new")
                 no_chains = length(chain)
-                iter_chain = round((iter.num * nb_chains - (burn_in) * 
-                  nb_chains)/Thin, 0)/no_chains
-                min_param = c(min(Parameters[, , 1]), min(Parameters[, 
-                  , 2]), min(Parameters[, , 3]), min(Parameters[, 
-                  , 4]), min(Parameters[, , 5]))
-                max_param = c(max(Parameters[, , 1]), max(Parameters[, 
-                  , 2]), max(Parameters[, , 3]), max(Parameters[, 
-                  , 4]), max(Parameters[, , 5]))
-                dlag = (max_param - min_param)/100
-                range_param = numeric()
-                for (j in 1:5) {
-                  range_param = cbind(range_param, seq(min_param[j] + 
-                    dlag[j]/2, max_param[j] - dlag[j]/2, by = dlag[j]))
-                }
-                par(mfcol = c(5, 2))
-                longueur = 1:iter_chain
-                for (j in 1:5) {
-                  for (i in 1:N) {
-                    plot(x = longueur, y = Parameters[longueur, 
-                      i, j], type = "n", col = 1, ylab = paste(param[j], 
-                      " of study ", i), xlab = "iteration number", 
-                      main = paste("Thinning interval = ", thin.interval, 
-                        "\n Total samplesize kept = ", (iter.num * 
-                          nb_chains - (burn_in) * nb_chains)/Thin), 
-                      ylim = range(range_param[, j]))
-                    for (l in 1:length(chain)) {
-                      lines(x = longueur, y = Parameters[longueur + 
-                        (iter_chain * (l - 1)), i, j], col = l)
-                    }
-                  }
-                }
-                min_Param = c(min(Parameter[, 1]), min(Parameter[, 
-                  2]), min(Parameter[, 3]), min(Parameter[, 4]), 
-                  min(Parameter[, 5]), min(Parameter[, 6]), min(Parameter[, 
-                    7]), min(Parameter[, 8]), min(Parameter[, 
-                    9]))
-                max_Param = c(max(Parameter[, 1]), max(Parameter[, 
-                  2]), max(Parameter[, 3]), max(Parameter[, 4]), 
-                  max(Parameter[, 5]), max(Parameter[, 6]), max(Parameter[, 
-                    7]), max(Parameter[, 8]), max(Parameter[, 
-                    9]))
-                dlag = (max_Param - min_Param)/100
-                range_Param = numeric()
-                for (j in 1:9) {
-                  range_Param = cbind(range_Param, seq(min_Param[j] + 
-                    dlag[j]/2, max_Param[j] - dlag[j]/2, by = dlag[j]))
-                }
-                for (j in 1:9) {
-                  plot(x = longueur, y = Parameter[longueur, 
-                    j], type = "n", col = 1, ylab = paste(Param[j]), 
-                    xlab = "iteration number", main = paste("Thinning interval = ", 
-                      thin.interval, "\n Total samplesize kept = ", 
-                      (iter.num * nb_chains - (burn_in) * nb_chains)/Thin), 
-                    ylim = range(range_Param[, j]))
-                  for (l in 1:length(chain)) {
-                    lines(x = longueur, y = Parameter[longueur + 
-                      (iter_chain * (l - 1)), j], col = l)
-                  }
-                }
-                dev.off()
             }
             else {
-                file.pdf2 = paste("Trace plots for N =", round((iter.num * 
-                  nb_chains - (burn_in) * nb_chains)/Thin, 0), 
-                  ".pdf")
-                pdf(file.pdf2, paper = "a4", height = 20)
-                param = c("theta", "alpha", "PI", "S1", "C1")
-                Param = c("Capital Theta", "Capital Lambda", 
-                  "beta", "~sigma[alpha]", "~sigma[theta]", "S Overall", 
-                  "C Overall", "S1_new", "C1_new")
-                min_param = c(min(Parameters[, , 1]), min(Parameters[, 
-                  , 2]), min(Parameters[, , 3]), min(Parameters[, 
-                  , 4]), min(Parameters[, , 5]))
-                max_param = c(max(Parameters[, , 1]), max(Parameters[, 
-                  , 2]), max(Parameters[, , 3]), max(Parameters[, 
-                  , 4]), max(Parameters[, , 5]))
-                dlag = (max_param - min_param)/100
-                range_param = numeric()
-                for (j in 1:5) {
-                  range_param = cbind(range_param, seq(min_param[j] + 
-                    dlag[j]/2, max_param[j] - dlag[j]/2, by = dlag[j]))
+                if (is.null(chain) == TRUE) {
+                  no_chains = 1
                 }
-                par(mfcol = c(5, 2))
-                longueur = 1:long
-                for (j in 1:5) {
-                  for (i in 1:N) {
-                    plot(x = longueur, y = Parameters[, i, j], 
-                      type = "l", col = "grey", ylab = paste(param[j], 
-                        " of study ", i), xlab = "iteration number", 
-                      main = paste("Thinning interval = ", thin.interval, 
-                        "\n Total samplesize kept = ", (iter.num * 
-                          nb_chains - (burn_in) * nb_chains)/Thin), 
-                      ylim = range(range_param[, j]))
-                    abline(a = parameters[i, 3, j], b = 0, col = "green", 
-                      lwd = 3)
-                    abline(a = parameters[i, 4, j], b = 0, col = "green", 
-                      lwd = 3)
-                  }
-                }
-                min_Param = c(min(Parameter[, 1]), min(Parameter[, 
-                  2]), min(Parameter[, 3]), min(Parameter[, 4]), 
-                  min(Parameter[, 5]), min(Parameter[, 6]), min(Parameter[, 
-                    7]), min(Parameter[, 8]), min(Parameter[, 
-                    9]))
-                max_Param = c(max(Parameter[, 1]), max(Parameter[, 
-                  2]), max(Parameter[, 3]), max(Parameter[, 4]), 
-                  max(Parameter[, 5]), max(Parameter[, 6]), max(Parameter[, 
-                    7]), max(Parameter[, 8]), max(Parameter[, 
-                    9]))
-                dlag = (max_Param - min_Param)/100
-                range_Param = numeric()
-                for (j in 1:9) {
-                  range_Param = cbind(range_Param, seq(min_Param[j] + 
-                    dlag[j]/2, max_Param[j] - dlag[j]/2, by = dlag[j]))
-                }
-                for (j in 1:9) {
-                  plot(x = longueur, y = Parameter[, j], type = "l", 
-                    col = "grey", ylab = paste(Param[j]), xlab = "iteration number", 
+            }
+            file.pdf5 = paste("Trace plots for N =", round((iter.num * 
+                nb_chains - (burn_in) * nb_chains)/Thin, 0), 
+                ".pdf")
+            pdf(file.pdf5, paper = "a4", height = 20)
+            param = c("theta", "alpha", "PI", "S1", "C1")
+            Param = c("Capital Theta", "Capital Lambda", "beta", 
+                "~sigma[alpha]", "~sigma[theta]", "S Overall", 
+                "C Overall", "S1_new", "C1_new")
+            iter_chain = round((iter.num * nb_chains - (burn_in) * 
+                nb_chains)/Thin, 0)/no_chains
+            min_param = c(min(Parameters[, , 1]), min(Parameters[, 
+                , 2]), min(Parameters[, , 3]), min(Parameters[, 
+                , 4]), min(Parameters[, , 5]))
+            max_param = c(max(Parameters[, , 1]), max(Parameters[, 
+                , 2]), max(Parameters[, , 3]), max(Parameters[, 
+                , 4]), max(Parameters[, , 5]))
+            dlag = (max_param - min_param)/100
+            range_param = numeric()
+            for (j in 1:5) {
+                range_param = cbind(range_param, seq(min_param[j] + 
+                  dlag[j]/2, max_param[j] - dlag[j]/2, by = dlag[j]))
+            }
+            par(mfcol = c(5, 2))
+            longueur = 1:iter_chain
+            for (j in 1:5) {
+                for (i in 1:N) {
+                  plot(x = longueur, y = Parameters[longueur, 
+                    i, j], type = "n", col = 1, ylab = paste(param[j], 
+                    " of study ", i), xlab = "iteration number", 
                     main = paste("Thinning interval = ", thin.interval, 
                       "\n Total samplesize kept = ", (iter.num * 
                         nb_chains - (burn_in) * nb_chains)/Thin), 
-                    ylim = range(range_Param[, j]))
-                  abline(a = parameter[j, 3], b = 0, col = "green", 
-                    lwd = 3)
-                  abline(a = parameter[j, 4], b = 0, col = "green", 
-                    lwd = 3)
+                    ylim = range(range_param[, j]))
+                  for (l in 1:no_chains) {
+                    lines(x = longueur, y = Parameters[longueur + 
+                      (iter_chain * (l - 1)), i, j], col = l)
+                  }
                 }
-                dev.off()
             }
+            min_Param = c(min(Parameter[, 1]), min(Parameter[, 
+                2]), min(Parameter[, 3]), min(Parameter[, 4]), 
+                min(Parameter[, 5]), min(Parameter[, 6]), min(Parameter[, 
+                  7]), min(Parameter[, 8]), min(Parameter[, 9]))
+            max_Param = c(max(Parameter[, 1]), max(Parameter[, 
+                2]), max(Parameter[, 3]), max(Parameter[, 4]), 
+                max(Parameter[, 5]), max(Parameter[, 6]), max(Parameter[, 
+                  7]), max(Parameter[, 8]), max(Parameter[, 9]))
+            dlag = (max_Param - min_Param)/100
+            range_Param = numeric()
+            for (j in 1:9) {
+                range_Param = cbind(range_Param, seq(min_Param[j] + 
+                  dlag[j]/2, max_Param[j] - dlag[j]/2, by = dlag[j]))
+            }
+            for (j in 1:9) {
+                plot(x = longueur, y = Parameter[longueur, j], 
+                  type = "n", col = 1, ylab = paste(Param[j]), 
+                  xlab = "iteration number", main = paste("Thinning interval = ", 
+                    thin.interval, "\n Total samplesize kept = ", 
+                    (iter.num * nb_chains - (burn_in) * nb_chains)/Thin), 
+                  ylim = range(range_Param[, j]))
+                for (l in 1:no_chains) {
+                  lines(x = longueur, y = Parameter[longueur + 
+                    (iter_chain * (l - 1)), j], col = l)
+                }
+            }
+            dev.off()
             file.pdf3 = paste("Density plots for N =", round((iter.num * 
                 nb_chains - (burn_in) * nb_chains)/Thin, 0), 
                 ".pdf")
@@ -2858,6 +2797,86 @@ function (data, burn_in = 0, iter.keep = NULL, Thin = 1, sub_rs = NULL,
                     (iter.num * nb_chains - (burn_in) * nb_chains)/Thin))
             }
             dev.off()
+            Sensi1 = apply(as.matrix(Parameters[, , 4]), 2, median)
+            Speci1 = apply(as.matrix(Parameters[, , 5]), 2, median)
+            Ov_Se = 1 - pnorm((median(Parameter[, 1]) - median(Parameter[, 
+                2])/2)/exp(median(Parameter[, 3])/2))
+            Ov_Sp = pnorm((median(Parameter[, 1]) + median(Parameter[, 
+                2])/2)/exp(-median(Parameter[, 3])/2))
+            thet = qnorm((1 - as.matrix(Parameters[, , 4])) + 
+                1e-14) * exp(Parameter[, 3]/2) + Parameter[, 
+                2]/2
+            min_TH = quantile(thet, trunc_low)
+            max_TH = quantile(thet, (1 - trunc_up))
+            dTH = 5e-05
+            TH_range = seq(min_TH + dTH/2, max_TH - dTH/2, dTH)
+            S_sroc = 1 - pnorm((TH_range - median(Parameter[, 
+                2])/2)/exp(median(Parameter[, 3])/2))
+            C_sroc = pnorm((TH_range + median(Parameter[, 2])/2)/exp(-median(Parameter[, 
+                3])/2))
+            if (conf_region == TRUE) {
+                min_t = 0
+                max_t = 2 * pi
+                dTt = 5e-05
+                range_t = seq(min_t + dTt/2, max_t - dTt/2, dTt)
+                bound_cte = sqrt(qchisq(1 - region_level, 2, 
+                  lower.tail = FALSE))
+                hat_mu_A = exp(-median(Parameter[, 3])/2) * (-median(Parameter[, 
+                  1]) + median(Parameter[, 2])/2)
+                s_A = sd(exp(-Parameter[, 3]/2) * (-Parameter[, 
+                  1] + Parameter[, 2]/2))
+                cos_fun_A = cos(range_t)
+                hat_mu_B = exp(median(Parameter[, 3])/2) * (median(Parameter[, 
+                  1]) + median(Parameter[, 2])/2)
+                s_B = sd(exp(Parameter[, 3]/2) * (Parameter[, 
+                  1] + Parameter[, 2]/2))
+                r = cor(exp(-Parameter[, 3]/2) * (-Parameter[, 
+                  1] + Parameter[, 2]/2), exp(Parameter[, 3]/2) * 
+                  (Parameter[, 1] + Parameter[, 2]/2))
+                cos_fun_B = cos(range_t + acos(r))
+                probit_S_confidence = hat_mu_A + s_A * bound_cte * 
+                  cos_fun_A
+                probit_C_confidence = hat_mu_B + s_B * bound_cte * 
+                  cos_fun_B
+                S_confidence = pnorm(probit_S_confidence)
+                C_confidence = pnorm(probit_C_confidence)
+            }
+            if (predict_region == TRUE) {
+                min_t = 0
+                max_t = 2 * pi
+                dTt = 5e-05
+                range_t = seq(min_t + dTt/2, max_t - dTt/2, dTt)
+                bound_cte = sqrt(qchisq(1 - region_level, 2, 
+                  lower.tail = FALSE))
+                hat_mu_A = exp(-median(Parameter[, 3])/2) * (-median(Parameter[, 
+                  1]) + median(Parameter[, 2])/2)
+                s_A = sd(exp(-Parameter[, 3]/2) * (-Parameter[, 
+                  1] + Parameter[, 2]/2))
+                hat_sigma_A = sqrt((exp(-median(Parameter[, 3])) * 
+                  (median((Parameter[, 5])^2) + 0.25 * median((Parameter[, 
+                    4])^2))))
+                cos_fun_A = cos(range_t)
+                hat_mu_B = exp(median(Parameter[, 3])/2) * (median(Parameter[, 
+                  1]) + median(Parameter[, 2])/2)
+                s_B = sd(exp(Parameter[, 3]/2) * (Parameter[, 
+                  1] + Parameter[, 2]/2))
+                hat_sigma_B = sqrt((exp(median(Parameter[, 3])) * 
+                  (median((Parameter[, 5])^2) + 0.25 * median((Parameter[, 
+                    4])^2))))
+                r = cor(exp(-Parameter[, 3]/2) * (-Parameter[, 
+                  1] + Parameter[, 2]/2), exp(Parameter[, 3]/2) * 
+                  (Parameter[, 1] + Parameter[, 2]/2))
+                hat_sigma_AB = -median((Parameter[, 5])^2) + 
+                  0.25 * median((Parameter[, 4])^2)
+                cos_fun_B = cos(range_t + acos(r))
+                probit_S_prediction = hat_mu_A + (sqrt(s_A^2 + 
+                  hat_sigma_A^2)) * bound_cte * cos_fun_A
+                probit_C_prediction = hat_mu_B + (sqrt(s_B^2 + 
+                  hat_sigma_B^2)) * bound_cte * cos(range_t + 
+                  acos(r + hat_sigma_AB))
+                S_prediction = pnorm(probit_S_prediction)
+                C_prediction = pnorm(probit_C_prediction)
+            }
             pdf("Summary ROC curve.pdf")
             default.x = range(1, 0)
             default.y = range(0, 1)
@@ -2865,28 +2884,34 @@ function (data, burn_in = 0, iter.keep = NULL, Thin = 1, sub_rs = NULL,
                 xlab = "", ylab = "")
             title(xlab = "Specificity", ylab = "Sensitivity", 
                 cex.lab = 1.5, main = "Summary ROC curve")
-            Sensi1 = apply(as.matrix(Parameters[, , 4]), 2, median)
-            Speci1 = apply(as.matrix(Parameters[, , 5]), 2, median)
-            Scale_factor = 10
-            symbols(Speci1, Sensi1, circles = rowSums(as.matrix(data[[1]])), 
-                inches = 0.1 * Scale_factor/7, add = TRUE)
-            Ov_Se = 1 - pnorm((median(Parameter[, 1]) - median(Parameter[, 
-                2])/2)/exp(median(Parameter[, 3])/2))
-            Ov_Sp = pnorm((median(Parameter[, 1]) + median(Parameter[, 
-                2])/2)/exp(-median(Parameter[, 3])/2))
-            points(Ov_Sp, Ov_Se, pch = 19, cex = 2)
-            thet = qnorm((1 - as.matrix(Parameters[, , 4])) + 
-                1e-14) * exp(Parameter[, 3]/2) + Parameter[, 
-                2]/2
-            min_TH = quantile(thet, 0.025)
-            max_TH = quantile(thet, 0.975)
-            dTH = 5e-05
-            TH_range = seq(min_TH + dTH/2, max_TH - dTH/2, dTH)
-            S_sroc = 1 - pnorm((TH_range - median(Parameter[, 
-                2])/2)/exp(median(Parameter[, 3])/2))
-            C_sroc = pnorm((TH_range + median(Parameter[, 2])/2)/exp(-median(Parameter[, 
-                3])/2))
+            if (plot.ind.studies == TRUE) {
+                if (Gold_Std == TRUE) {
+                  Scale_factor = 10
+                  SENSi1 = data[[1]][, 1]/(data[[1]][, 1] + data[[1]][, 
+                    3])
+                  SPECi1 = data[[1]][, 4]/(data[[1]][, 4] + data[[1]][, 
+                    2])
+                  symbols(SPECi1, SENSi1, circles = rowSums(as.matrix(data[[1]])), 
+                    inches = 0.1 * Scale_factor/7, add = TRUE, 
+                    fg = 1)
+                }
+                else {
+                  Scale_factor = 10
+                  symbols(Speci1, Sensi1, circles = rowSums(as.matrix(data[[1]])), 
+                    inches = 0.1 * Scale_factor/7, add = TRUE, 
+                    fg = 1)
+                }
+            }
+            if (conf_region == TRUE) {
+                lines(C_confidence, S_confidence, lwd = 3, lty = lty.conf.region, 
+                  col = col.pooled.estimate)
+            }
+            if (predict_region == TRUE) {
+                lines(C_prediction, S_prediction, lwd = 3, lty = lty.predict.region, 
+                  col = col.predict.region)
+            }
             lines(C_sroc, S_sroc, lwd = 3, col = "black", lty = 1)
+            points(Ov_Sp, Ov_Se, pch = 19, cex = 2.5, col = col.pooled.estimate)
             dev.off()
         }
     }
@@ -2912,7 +2937,7 @@ function (data, burn_in = 0, iter.keep = NULL, Thin = 1, sub_rs = NULL,
                 nb_chains - (burn_in) * nb_chains)/Thin, 0)), 
                 file = test.file, append = TRUE)
             write(paste(""), file = test.file, append = TRUE)
-            write(paste("File location : ", path), file = test.file, 
+            write(paste("File location : ", summary.path), file = test.file, 
                 append = TRUE)
             write(paste(""), file = test.file, append = TRUE)
             write(paste("Date :", Sys.time()), file = test.file, 
@@ -4359,148 +4384,81 @@ function (data, burn_in = 0, iter.keep = NULL, Thin = 1, sub_rs = NULL,
             Parameter[, 9] <- C1_new
             if (print_plot == TRUE) {
                 if (is.null(chain) == FALSE) {
-                  file.pdf5 = paste("Trace plots for N =", round((iter.num * 
-                    nb_chains - (burn_in) * nb_chains)/Thin, 
-                    0), ".pdf")
-                  pdf(file.pdf5, paper = "a4", height = 20)
-                  param = c("theta", "alpha", "PI", "S1", "C1")
-                  Param = c("Capital Theta", "Capital Lambda", 
-                    "beta", "~sigma[alpha]", "~sigma[theta]", 
-                    "S Overall", "C Overall", "S1_new", "C1_new")
                   no_chains = length(chain)
-                  iter_chain = round((iter.num * nb_chains - 
-                    (burn_in) * nb_chains)/Thin, 0)/no_chains
-                  min_param = c(min(Parameters[, , 1]), min(Parameters[, 
-                    , 2]), min(Parameters[, , 3]), min(Parameters[, 
-                    , 4]), min(Parameters[, , 5]))
-                  max_param = c(max(Parameters[, , 1]), max(Parameters[, 
-                    , 2]), max(Parameters[, , 3]), max(Parameters[, 
-                    , 4]), max(Parameters[, , 5]))
-                  dlag = (max_param - min_param)/100
-                  range_param = numeric()
-                  for (j in 1:5) {
-                    range_param = cbind(range_param, seq(min_param[j] + 
-                      dlag[j]/2, max_param[j] - dlag[j]/2, by = dlag[j]))
-                  }
-                  par(mfcol = c(5, 2))
-                  longueur = 1:iter_chain
-                  for (j in 1:5) {
-                    for (i in 1:N) {
-                      plot(x = longueur, y = Parameters[longueur, 
-                        i, j], type = "n", col = 1, ylab = paste(param[j], 
-                        " of study ", i), xlab = "iteration number", 
-                        main = paste("Thinning interval = ", 
-                          thin.interval, "\n Total samplesize kept = ", 
-                          (iter.num * nb_chains - (burn_in) * 
-                            nb_chains)/Thin), ylim = range(range_param[, 
-                          j]))
-                      for (l in 1:length(chain)) {
-                        lines(x = longueur, y = Parameters[longueur + 
-                          (iter_chain * (l - 1)), i, j], col = l)
-                      }
-                    }
-                  }
-                  min_Param = c(min(Parameter[, 1]), min(Parameter[, 
-                    2]), min(Parameter[, 3]), min(Parameter[, 
-                    4]), min(Parameter[, 5]), min(Parameter[, 
-                    6]), min(Parameter[, 7]), min(Parameter[, 
-                    8]), min(Parameter[, 9]))
-                  max_Param = c(max(Parameter[, 1]), max(Parameter[, 
-                    2]), max(Parameter[, 3]), max(Parameter[, 
-                    4]), max(Parameter[, 5]), max(Parameter[, 
-                    6]), max(Parameter[, 7]), max(Parameter[, 
-                    8]), max(Parameter[, 9]))
-                  dlag = (max_Param - min_Param)/100
-                  range_Param = numeric()
-                  for (j in 1:9) {
-                    range_Param = cbind(range_Param, seq(min_Param[j] + 
-                      dlag[j]/2, max_Param[j] - dlag[j]/2, by = dlag[j]))
-                  }
-                  for (j in 1:9) {
-                    plot(x = longueur, y = Parameter[longueur, 
-                      j], type = "n", col = 1, ylab = paste(Param[j]), 
-                      xlab = "iteration number", main = paste("Thinning interval = ", 
-                        thin.interval, "\n Total samplesize kept = ", 
-                        (iter.num * nb_chains - (burn_in) * nb_chains)/Thin), 
-                      ylim = range(range_Param[, j]))
-                    for (l in 1:length(chain)) {
-                      lines(x = longueur, y = Parameter[longueur + 
-                        (iter_chain * (l - 1)), j], col = l)
-                    }
-                  }
-                  dev.off()
                 }
                 else {
-                  file.pdf2 = paste("Trace plots for N =", round((iter.num * 
-                    nb_chains - (burn_in) * nb_chains)/Thin, 
-                    0), ".pdf")
-                  pdf(file.pdf2, paper = "a4", height = 20)
-                  param = c("theta", "alpha", "PI", "S1", "C1")
-                  Param = c("Capital Theta", "Capital Lambda", 
-                    "beta", "~sigma[alpha]", "~sigma[theta]", 
-                    "S Overall", "C Overall", "S1_new", "C1_new")
-                  min_param = c(min(Parameters[, , 1]), min(Parameters[, 
-                    , 2]), min(Parameters[, , 3]), min(Parameters[, 
-                    , 4]), min(Parameters[, , 5]), min(Parameters[, 
-                    , 6]), min(Parameters[, , 7]))
-                  max_param = c(max(Parameters[, , 1]), max(Parameters[, 
-                    , 2]), max(Parameters[, , 3]), max(Parameters[, 
-                    , 4]), max(Parameters[, , 5]), max(Parameters[, 
-                    , 6]), max(Parameters[, , 7]))
-                  dlag = (max_param - min_param)/100
-                  range_param = numeric()
-                  for (j in 1:5) {
-                    range_param = cbind(range_param, seq(min_param[j] + 
-                      dlag[j]/2, max_param[j] - dlag[j]/2, by = dlag[j]))
+                  if (is.null(chain) == TRUE) {
+                    no_chains = 1
                   }
-                  par(mfcol = c(5, 2))
-                  longueur = 1:long
-                  for (j in 1:5) {
-                    for (i in 1:N) {
-                      plot(x = longueur, y = Parameters[, i, 
-                        j], type = "l", col = "grey", ylab = paste(param[j], 
-                        " of study ", i), xlab = "iteration number", 
-                        main = paste("Thinning interval = ", 
-                          thin.interval, "\n Total samplesize kept = ", 
-                          (iter.num * nb_chains - (burn_in) * 
-                            nb_chains)/Thin), ylim = range(range_param[, 
-                          j]))
-                      abline(a = parameters[i, 2, j], b = 0, 
-                        col = "green", lwd = 3)
-                      abline(a = parameters[i, 3, j], b = 0, 
-                        col = "green", lwd = 3)
-                    }
-                  }
-                  min_Param = c(min(Parameter[, 1]), min(Parameter[, 
-                    2]), min(Parameter[, 3]), min(Parameter[, 
-                    4]), min(Parameter[, 5]), min(Parameter[, 
-                    6]), min(Parameter[, 7]), min(Parameter[, 
-                    8]), min(Parameter[, 9]))
-                  max_Param = c(max(Parameter[, 1]), max(Parameter[, 
-                    2]), max(Parameter[, 3]), max(Parameter[, 
-                    4]), max(Parameter[, 5]), max(Parameter[, 
-                    6]), max(Parameter[, 7]), max(Parameter[, 
-                    8]), max(Parameter[, 9]))
-                  dlag = (max_Param - min_Param)/100
-                  range_Param = numeric()
-                  for (j in 1:9) {
-                    range_Param = cbind(range_Param, seq(min_Param[j] + 
-                      dlag[j]/2, max_Param[j] - dlag[j]/2, by = dlag[j]))
-                  }
-                  for (j in 1:9) {
-                    plot(x = longueur, y = Parameter[, j], type = "l", 
-                      col = "grey", ylab = paste(Param[j]), xlab = "iteration number", 
+                }
+                file.pdf5 = paste("Trace plots for N =", round((iter.num * 
+                  nb_chains - (burn_in) * nb_chains)/Thin, 0), 
+                  ".pdf")
+                pdf(file.pdf5, paper = "a4", height = 20)
+                param = c("theta", "alpha", "PI", "S1", "C1")
+                Param = c("Capital Theta", "Capital Lambda", 
+                  "beta", "~sigma[alpha]", "~sigma[theta]", "S Overall", 
+                  "C Overall", "S1_new", "C1_new")
+                iter_chain = round((iter.num * nb_chains - (burn_in) * 
+                  nb_chains)/Thin, 0)/no_chains
+                min_param = c(min(Parameters[, , 1]), min(Parameters[, 
+                  , 2]), min(Parameters[, , 3]), min(Parameters[, 
+                  , 4]), min(Parameters[, , 5]))
+                max_param = c(max(Parameters[, , 1]), max(Parameters[, 
+                  , 2]), max(Parameters[, , 3]), max(Parameters[, 
+                  , 4]), max(Parameters[, , 5]))
+                dlag = (max_param - min_param)/100
+                range_param = numeric()
+                for (j in 1:5) {
+                  range_param = cbind(range_param, seq(min_param[j] + 
+                    dlag[j]/2, max_param[j] - dlag[j]/2, by = dlag[j]))
+                }
+                par(mfcol = c(5, 2))
+                longueur = 1:iter_chain
+                for (j in 1:5) {
+                  for (i in 1:N) {
+                    plot(x = longueur, y = Parameters[longueur, 
+                      i, j], type = "n", col = 1, ylab = paste(param[j], 
+                      " of study ", i), xlab = "iteration number", 
                       main = paste("Thinning interval = ", thin.interval, 
                         "\n Total samplesize kept = ", (iter.num * 
                           nb_chains - (burn_in) * nb_chains)/Thin), 
-                      ylim = range(range_Param[, j]))
-                    abline(a = parameter[j, 2], b = 0, col = "green", 
-                      lwd = 3)
-                    abline(a = parameter[j, 3], b = 0, col = "green", 
-                      lwd = 3)
+                      ylim = range(range_param[, j]))
+                    for (l in 1:no_chains) {
+                      lines(x = longueur, y = Parameters[longueur + 
+                        (iter_chain * (l - 1)), i, j], col = l)
+                    }
                   }
-                  dev.off()
                 }
+                min_Param = c(min(Parameter[, 1]), min(Parameter[, 
+                  2]), min(Parameter[, 3]), min(Parameter[, 4]), 
+                  min(Parameter[, 5]), min(Parameter[, 6]), min(Parameter[, 
+                    7]), min(Parameter[, 8]), min(Parameter[, 
+                    9]))
+                max_Param = c(max(Parameter[, 1]), max(Parameter[, 
+                  2]), max(Parameter[, 3]), max(Parameter[, 4]), 
+                  max(Parameter[, 5]), max(Parameter[, 6]), max(Parameter[, 
+                    7]), max(Parameter[, 8]), max(Parameter[, 
+                    9]))
+                dlag = (max_Param - min_Param)/100
+                range_Param = numeric()
+                for (j in 1:9) {
+                  range_Param = cbind(range_Param, seq(min_Param[j] + 
+                    dlag[j]/2, max_Param[j] - dlag[j]/2, by = dlag[j]))
+                }
+                for (j in 1:9) {
+                  plot(x = longueur, y = Parameter[longueur, 
+                    j], type = "n", col = 1, ylab = paste(Param[j]), 
+                    xlab = "iteration number", main = paste("Thinning interval = ", 
+                      thin.interval, "\n Total samplesize kept = ", 
+                      (iter.num * nb_chains - (burn_in) * nb_chains)/Thin), 
+                    ylim = range(range_Param[, j]))
+                  for (l in 1:no_chains) {
+                    lines(x = longueur, y = Parameter[longueur + 
+                      (iter_chain * (l - 1)), j], col = l)
+                  }
+                }
+                dev.off()
                 file.pdf3 = paste("Density plots for N =", round((iter.num * 
                   nb_chains - (burn_in) * nb_chains)/Thin, 0), 
                   ".pdf")
@@ -4527,30 +4485,19 @@ function (data, burn_in = 0, iter.keep = NULL, Thin = 1, sub_rs = NULL,
                       (iter.num * nb_chains - (burn_in) * nb_chains)/Thin))
                 }
                 dev.off()
-                pdf("Summary ROC curve.pdf")
-                default.x = range(1, 0)
-                default.y = range(0, 1)
-                plot(x = default.x, y = default.y, type = "n", 
-                  xlim = rev(range(default.x)), xlab = "", ylab = "")
-                title(xlab = "Specificity", ylab = "Sensitivity", 
-                  cex.lab = 1.5, main = "Summary ROC curve")
                 Sensi1 = apply(as.matrix(Parameters[, , 4]), 
                   2, median)
                 Speci1 = apply(as.matrix(Parameters[, , 5]), 
                   2, median)
-                Scale_factor = 10
-                symbols(Speci1, Sensi1, circles = rowSums(as.matrix(data[[1]])), 
-                  inches = 0.1 * Scale_factor/7, add = TRUE)
                 Ov_Se = 1 - pnorm((median(Parameter[, 1]) - median(Parameter[, 
                   2])/2)/exp(median(Parameter[, 3])/2))
                 Ov_Sp = pnorm((median(Parameter[, 1]) + median(Parameter[, 
                   2])/2)/exp(-median(Parameter[, 3])/2))
-                points(Ov_Sp, Ov_Se, pch = 19, cex = 2)
                 thet = qnorm((1 - as.matrix(Parameters[, , 4])) + 
                   1e-14) * exp(Parameter[, 3]/2) + Parameter[, 
                   2]/2
-                min_TH = quantile(thet, 0.025)
-                max_TH = quantile(thet, 0.975)
+                min_TH = quantile(thet, trunc_low)
+                max_TH = quantile(thet, (1 - trunc_up))
                 dTH = 5e-05
                 TH_range = seq(min_TH + dTH/2, max_TH - dTH/2, 
                   dTH)
@@ -4558,8 +4505,111 @@ function (data, burn_in = 0, iter.keep = NULL, Thin = 1, sub_rs = NULL,
                   2])/2)/exp(median(Parameter[, 3])/2))
                 C_sroc = pnorm((TH_range + median(Parameter[, 
                   2])/2)/exp(-median(Parameter[, 3])/2))
+                if (conf_region == TRUE) {
+                  min_t = 0
+                  max_t = 2 * pi
+                  dTt = 5e-05
+                  range_t = seq(min_t + dTt/2, max_t - dTt/2, 
+                    dTt)
+                  bound_cte = sqrt(qchisq(1 - region_level, 2, 
+                    lower.tail = FALSE))
+                  hat_mu_A = exp(-median(Parameter[, 3])/2) * 
+                    (-median(Parameter[, 1]) + median(Parameter[, 
+                      2])/2)
+                  s_A = sd(exp(-Parameter[, 3]/2) * (-Parameter[, 
+                    1] + Parameter[, 2]/2))
+                  cos_fun_A = cos(range_t)
+                  hat_mu_B = exp(median(Parameter[, 3])/2) * 
+                    (median(Parameter[, 1]) + median(Parameter[, 
+                      2])/2)
+                  s_B = sd(exp(Parameter[, 3]/2) * (Parameter[, 
+                    1] + Parameter[, 2]/2))
+                  r = cor(exp(-Parameter[, 3]/2) * (-Parameter[, 
+                    1] + Parameter[, 2]/2), exp(Parameter[, 3]/2) * 
+                    (Parameter[, 1] + Parameter[, 2]/2))
+                  cos_fun_B = cos(range_t + acos(r))
+                  probit_S_confidence = hat_mu_A + s_A * bound_cte * 
+                    cos_fun_A
+                  probit_C_confidence = hat_mu_B + s_B * bound_cte * 
+                    cos_fun_B
+                  S_confidence = pnorm(probit_S_confidence)
+                  C_confidence = pnorm(probit_C_confidence)
+                }
+                if (predict_region == TRUE) {
+                  min_t = 0
+                  max_t = 2 * pi
+                  dTt = 5e-05
+                  range_t = seq(min_t + dTt/2, max_t - dTt/2, 
+                    dTt)
+                  bound_cte = sqrt(qchisq(1 - region_level, 2, 
+                    lower.tail = FALSE))
+                  hat_mu_A = exp(-median(Parameter[, 3])/2) * 
+                    (-median(Parameter[, 1]) + median(Parameter[, 
+                      2])/2)
+                  s_A = sd(exp(-Parameter[, 3]/2) * (-Parameter[, 
+                    1] + Parameter[, 2]/2))
+                  hat_sigma_A = sqrt((exp(-median(Parameter[, 
+                    3])) * (median((Parameter[, 5])^2) + 0.25 * 
+                    median((Parameter[, 4])^2))))
+                  cos_fun_A = cos(range_t)
+                  hat_mu_B = exp(median(Parameter[, 3])/2) * 
+                    (median(Parameter[, 1]) + median(Parameter[, 
+                      2])/2)
+                  s_B = sd(exp(Parameter[, 3]/2) * (Parameter[, 
+                    1] + Parameter[, 2]/2))
+                  hat_sigma_B = sqrt((exp(median(Parameter[, 
+                    3])) * (median((Parameter[, 5])^2) + 0.25 * 
+                    median((Parameter[, 4])^2))))
+                  r = cor(exp(-Parameter[, 3]/2) * (-Parameter[, 
+                    1] + Parameter[, 2]/2), exp(Parameter[, 3]/2) * 
+                    (Parameter[, 1] + Parameter[, 2]/2))
+                  hat_sigma_AB = -median((Parameter[, 5])^2) + 
+                    0.25 * median((Parameter[, 4])^2)
+                  cos_fun_B = cos(range_t + acos(r))
+                  probit_S_prediction = hat_mu_A + (sqrt(s_A^2 + 
+                    hat_sigma_A^2)) * bound_cte * cos_fun_A
+                  probit_C_prediction = hat_mu_B + (sqrt(s_B^2 + 
+                    hat_sigma_B^2)) * bound_cte * cos(range_t + 
+                    acos(r + hat_sigma_AB))
+                  S_prediction = pnorm(probit_S_prediction)
+                  C_prediction = pnorm(probit_C_prediction)
+                }
+                pdf("Summary ROC curve.pdf")
+                default.x = range(1, 0)
+                default.y = range(0, 1)
+                plot(x = default.x, y = default.y, type = "n", 
+                  xlim = rev(range(default.x)), xlab = "", ylab = "")
+                title(xlab = "Specificity", ylab = "Sensitivity", 
+                  cex.lab = 1.5, main = "Summary ROC curve")
+                if (plot.ind.studies == TRUE) {
+                  if (Gold_Std == TRUE) {
+                    Scale_factor = 10
+                    SENSi1 = data[[1]][, 1]/(data[[1]][, 1] + 
+                      data[[1]][, 3])
+                    SPECi1 = data[[1]][, 4]/(data[[1]][, 4] + 
+                      data[[1]][, 2])
+                    symbols(SPECi1, SENSi1, circles = rowSums(as.matrix(data[[1]])), 
+                      inches = 0.1 * Scale_factor/7, add = TRUE, 
+                      fg = 1)
+                  }
+                  else {
+                    Scale_factor = 10
+                    symbols(Speci1, Sensi1, circles = rowSums(as.matrix(data[[1]])), 
+                      inches = 0.1 * Scale_factor/7, add = TRUE, 
+                      fg = 1)
+                  }
+                }
+                if (conf_region == TRUE) {
+                  lines(C_confidence, S_confidence, lwd = 3, 
+                    lty = lty.conf.region, col = col.pooled.estimate)
+                }
+                if (predict_region == TRUE) {
+                  lines(C_prediction, S_prediction, lwd = 3, 
+                    lty = lty.predict.region, col = col.predict.region)
+                }
                 lines(C_sroc, S_sroc, lwd = 3, col = "black", 
                   lty = 1)
+                points(Ov_Sp, Ov_Se, pch = 19, cex = 2.5, col = col.pooled.estimate)
                 dev.off()
             }
         }

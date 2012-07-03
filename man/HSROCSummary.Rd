@@ -9,8 +9,12 @@
 \usage{
 
 HSROCSummary(data, burn_in = 0, iter.keep = NULL, Thin = 1, sub_rs=NULL, 
-  point_estimate = c("median", "mean"), path = getwd(), chain = NULL,
-  tv = NULL, digit = 6, print_plot = FALSE ) 
+  point_estimate = c("median", "mean"), summary.path = getwd(), 
+  chain = getwd(), tv = NULL, digit = 6, print_plot = FALSE, 
+  plot.ind.studies = TRUE, conf_region = TRUE, predict_region = TRUE, 
+  col.pooled.estimate = "red", col.predict.region = "blue", 
+  lty.conf.region = "dotdash", lty.predict.region = "dotted", 
+  region_level = 0.95, trunc_low = 0.025, trunc_up = 0.025 ) 
 
 }
 
@@ -22,11 +26,21 @@ HSROCSummary(data, burn_in = 0, iter.keep = NULL, Thin = 1, sub_rs=NULL,
   \item{Thin}{a single numeric value.  It sets the numerical field used to select every thin-th iteration to contribute to the estimates being calculated.  The default value is 1. }
   \item{sub_rs}{a list that describes the partition of the reference standard among the studies, if any.  See details for further explanations.}
   \item{point_estimate}{a character string indicating which method is to be used to calculate the estimates.  One of "median" (default) or "mean", can be used }
-  \item{path}{a character string pointing to the directory where the SUMMARY files are to be stored.  }
+  \item{summary.path}{a character string pointing to the directory where the SUMMARY files are to be stored.  }
   \item{chain}{ A list of character strings pointing to each directory, one for each chain, where the files created during the Gibbs sampler process are stored.}
   \item{tv}{a list of true parameter values.  See details for further explanations }
   \item{digit}{integer indicating the number of decimal places to be used.  The default value is 6.  }
-  \item{print_plot}{logical.  If TRUE, pdf files of trace, density and summary receiver operating characteristic (SROC) curve plots are saved in the \code{path} working directory to help assess convergence of the Gibbs sampler.  }
+  \item{print_plot}{logical.  If TRUE, pdf files of trace, density and summary receiver operating characteristic (SROC) curve plots are saved in the \code{summary.path} working directory to help assess convergence of the Gibbs sampler.  }
+  \item{plot.ind.studies}{logical.  If TRUE (default), empty circles representing individual studies are drawn on the SROC plot.  The radius of the circles are proportional to the sample size of the studies.   }
+  \item{conf_region}{logical.  If TRUE (default), a confidence region curve is drawn on the SROC plot.  }
+  \item{predict_region}{logical.  If TRUE (default), a prediction region curve is drawn on the SROC plot.  }
+  \item{col.pooled.estimate}{A specification for the default SROC plotting color of the pooled estimate point and confidence region curve. Defaults to "red".}
+  \item{col.predict.region}{A specification for the default SROC plotting color of the prediction region curve. Defaults to "blue".}
+  \item{lty.conf.region}{The confidence region line type. Default to "dotdash"}
+  \item{lty.predict.region}{The prediction region line type. Default to "dotted"}
+  \item{region_level}{The confidence (prediction) level required for the confidence (prediction) region.}
+  \item{trunc_low}{Lower limit truncation entering the creation of the SROC curve.  Default to 0.025.  See details for further explanations.}
+  \item{trunc_up}{Upper limit truncation entering the creation of the SROC curve.  Default to 0.025.  See details for further explanations.}
 }
 
 \details{
@@ -40,7 +54,12 @@ The within-study parameters must be a matrix-like object with each column being 
 The between-study parameters must be a vector of the following true values : \eqn{\Theta}{THETA}, \eqn{\sigma_{\theta}}{sigma_theta}, \eqn{\Lambda}{LAMBDA}, \eqn{\sigma_{\alpha}}{sigma_alpha} and \eqn{\beta}{beta}.  The reference stadard initial values must be a 2 X \code{sub_rs[[1]]} matrix-like object.  
 The first row must be the true values of the sensitivity of the reference standard, while the second row must correspond to true values of the specificity of the reference standard.   The ordering described above in the within-study, between-study and reference standard true parameters must be preserved otherwise an error message will be displayed. 
 
-If the argument \code{print_plot} is equal to \code{TRUE}, the function will create and save in the \code{path} working directory 3 type of plots to help the user judge if the descriptive statistics are reliable. First, a trace plot for each parameter will be created to help evaluate whether the Gibbs sampler has converged. Each trace plot is a scatter plot of the posterior sample of a single parameter vs the iteration number of the Gibbs sampler. Second, a density plot for each parameter will also be created.  It plots a smoothed posterior kernel density estimate for each parameter.  Finally, a SROC curve plot will also be created by the function. It summarizes the performance of diagnostic tests by plotting the relationship between the true positive rate and the false positive rate of the tests, as the threshold used to distinguish disease cases from noncases varies.   
+If the argument \code{print_plot} is equal to \code{TRUE}, the function will create and save in the \code{summary.path} working directory 3 type of plots to help the user judge if the descriptive statistics are reliable. First, a trace plot for each parameter will be created to help evaluate whether the Gibbs sampler has converged. Each trace plot is a scatter plot of the posterior sample of a single parameter vs the iteration number of the Gibbs sampler. Second, a density plot for each parameter will also be created.  It plots a smoothed posterior kernel density estimate for each parameter.  Finally, a SROC curve plot will also be created by the function. It summarizes the performance of diagnostic tests by plotting the relationship between the true positive rate and the false positive rate of the tests, as the threshold used to distinguish disease cases from noncases varies.   
+
+The SROC curve plots Sensitivity () vs Specificity () at the posterior mean values of \eqn{\Lambda}{LAMBDA} and \eqn{\beta}{beta} as the value of T varies over the posterior sample of \eqn{\Theta}{THETA}.  The \code{trunc_low} and \code{trunc_up} arguments truncate the posterior sample of \eqn{\Theta}{THETA} by (\code{trunc_low})*100% and (\code{trunc_up})*100% of the smallest and largest values of \eqn{\Theta}{THETA}, respectively.
+
+
+For more help on this function, see the tutorial pdf file available at http://www.nandinidendukuri.com/filesonjoomlasite/HSROC_R_Tutorial.pdf
 
 }
 
@@ -48,7 +67,7 @@ If the argument \code{print_plot} is equal to \code{TRUE}, the function will cre
 
 A list of : Point estimates and \eqn{95\%} highest posterior density (HPD) intervals of the between-study parameters, within-study parameters and reference standard parameters.  All estimates are obtained via a Gibbs sampler process.
 
-It also prints in the \code{path} working directory a text file with a more complete summary of the results listed above (i.e. the results also include stadard errors and MC errors plus the posterior predictive value for the sensitivity and specificity of a new study that has not yet taken place).  
+It also prints in the \code{summary.path} working directory a text file with a more complete summary of the results listed above (i.e. the results also include stadard errors and MC errors plus the posterior predictive value for the sensitivity and specificity of a new study that has not yet taken place).  
 
 }
 
@@ -83,8 +102,14 @@ HSROCSummary(data = MRI, burn_in=5000, print_plot=TRUE )
 
 data(In.house)	#load the data
 \dontrun{
-HSROCSummary(data = In.house, burn_in=5000, Thin=10, 
-		chain=chain_path, print_plot=TRUE )
+HSROCSum1<- HSROCSummary(data = In.house, burn_in=5000, Thin=10, 
+		chain=chain_path, print_plot=TRUE,
+		sub_rs=REFSTD  )
+
+
+#For more help on this function, see the tutorial pdf file availalbe
+#at http://www.nandinidendukuri.com/filesonjoomlasite/HSROC_R_Tutorial.pdf
+
 }
 
 \dontshow{
@@ -100,9 +125,17 @@ z <- HPDinterval(y)
 
 \references{ 
 
+Dendukuri, N., Schiller, I., Joseph, L., and Pai, M. (2012) \emph{Bayesian meta-analysis of the accuracy of a test for tuberculosis pleuritis in the absence of a gold-standard reference}. Biometrics. doi:10.1111/j. 1541-0420.2012.01773.x
+
+Rutter, C. M., and Gatsonis, C. A. (2001) \emph{A hierarchical regression approach to meta-analysis of diagnostic accuracy evaluations}. Statistics in Medicine, 20(19):2865-2884.
+
 Scheidler J, Hricak H, Yu KK, Subak L, Segal MR. \emph{Radiological evaluation of lymph node metastases in patients with cervical cancer : a meta-analysis}.  Journal of the American Medical Association 1997 ; 278(13):1096-1101. 
 
 Pai, M. et al. (2004) \emph{Nucleic acid amplification in the diagnosis of tuberculous pleuritis: a systematic review and meta-analysis}.  BMC Infect Dis 2004, 4:6.
+
+Reitsma, J. B., Glas, A. S., Rutjes, A. W., Scholten, R. J., Bossuyt, P. M., and Zwinderman, A. H. (2005) \emph{Bivariate analysis of sensitivity and specificity produces informative summary measures in diagnositic reviews}.  Journal of Clinical Epidemiology ; 58(10), 982-990.
+
+Harbord, R. M., Deeks, J. J., Egger, M., Whiting, P., and Sterne, J. A. (2006) \emph{Unification of models for meta-analysis of diagnostic accuracy studies.}  Biostatistics ; 8(2), 239-251.
 
 }
 

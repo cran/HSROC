@@ -62,6 +62,18 @@ each of these additional elements must be a vector (possibly of length one) taki
 The \code{range.T} argument ensures the individual \eqn{\theta_i}{theta_i} will be generated within the range provided.  If no range is provided by the user (default) the function assumes no restrictions are made on the possible values of \eqn{\theta_i}{theta_i}.
 The \code{range.L} argument ensures the individual \eqn{\alpha_i}{alpha_i} will be generated within the range provided.  If no range is provided by the user (default) the function assumes no restrictions are made on the possible values of \eqn{\theta_i}{theta_i}.
 
+
+For more help on this function, see the tutorial pdf file available on http://www.nandinidendukuri.com/filesonjoomlasite/HSROC_R_Tutorial.pdf
+
+
+}
+
+\references{ 
+
+Dendukuri, N., Schiller, I., Joseph, L., and Pai, M. (2012) \emph{Bayesian meta-analysis of the accuracy of a test for tuberculosis pleuritis in the absence of a gold-standard reference}. Biometrics. doi:10.1111/j. 1541-0420.2012.01773.x
+
+Rutter, C. M., and Gatsonis, C. A. (2001) \emph{A hierarchical regression approach to meta-analysis of diagnostic accuracy evaluations}. Statistics in Medicine, 20(19):2865-2884.
+
 }
 
 
@@ -140,6 +152,7 @@ sim.data = simdata(N=N, n=seq(30,120,1), n.random=TRUE, sub_rs = REFSTD,
    prev=pi,  se_ref=s2, sp_ref=c2, T=THETA, range.T=c(-5,5),L=LAMBDA, 
    sd_t=sd_theta,sd_a=sd_alpha, b=beta)
 }
+
 
 \keyword{datagen}
 

@@ -64,6 +64,9 @@ The first element of the list-object \code{sub_rs} corresponds to the number of 
 each of these additional elements must be a vector (possibly of length one) taking as their values the labelling of the corresponding studies sharing the same reference standard.  For example, if we have 2 reference tests, the first one aplied over study 1-10 and the second one applied over study 11-15 then the \code{sub_rs} list-argument should be of length 3 with the following elements : 3, 1:10, 11:15
 
 The \code{path} argument points to the working directory where files written at each iteration of the Gibbs sampler will be saved.  If no path is provided, the current working directory will be used
+
+For more help on this function, see the tutorial pdf file available at http://www.nandinidendukuri.com/filesonjoomlasite/HSROC_R_Tutorial.pdf
+
 }
 
 \value{
@@ -90,9 +93,9 @@ A series of files listing the values of various parameters sampled in the last i
 }
 
 \references{
-N. Dendukuri, I. Schiller, L. Joseph and M. Pai \emph{Bayesian meta-analysis of the accuracy of a test for tuberculosis pleuritis in the absence of a gold-standard reference}. (Under review).
+Dendukuri, N., Schiller, I., Joseph, L., and Pai, M. (2012) \emph{Bayesian meta-analysis of the accuracy of a test for tuberculosis pleuritis in the absence of a gold-standard reference}. Biometrics. doi:10.1111/j. 1541-0420.2012.01773.x
 
-C. M. Rutter and C. A. Gatsonis. \emph{A hierarchical regression approach to meta-analysis of diagnostic accuracy evaluations}. Statistics in Medicine, 20(19):2865-2884, 2001.
+Rutter, C. M., and Gatsonis, C. A. (2001) \emph{A hierarchical regression approach to meta-analysis of diagnostic accuracy evaluations}. Statistics in Medicine, 20(19):2865-2884.
 }
   
 \examples{
@@ -150,22 +153,25 @@ C2.a = rep(0.9, 3) ;	C2.b = rep(1, 3)
 \dontrun{
 
 set.seed(10)
-estimates = HSROC(data=In.house, init=init, iter.num=5000,  
+HSROC(data=In.house, init=init, iter.num=50000,  
    prior.SEref=c(S2.a,S2.b), prior.SPref=c (C2.a,C2.b), sub_rs=REFSTD) 
 
 #Putting prior information on sigma_alpha^2 (sigma_alphs squared) 
 #instead of sigma_alpha
 set.seed(10)
-estimates = HSROC(data=In.house, init=init, iter.num=5000,  
+HSROC(data=In.house, init=init, iter.num=50000,  
    prior.SEref=c(S2.a,S2.b), prior.SPref=c (C2.a,C2.b), 
 		sub_rs=REFSTD, prior_sd_alpha = list(0,2,"v"))
 
 
 #Letting the function select randomly its own initial values
 set.seed(10)
-estimates = HSROC(data=In.house, iter.num=5000,  
+HSROC(data=In.house, iter.num=50000,  
    prior.SEref=c(S2.a,S2.b), prior.SPref=c (C2.a,C2.b), 
 		sub_rs=REFSTD)
+
+#For more help on this function, see the tutorial pdf file availalbe
+#at http://www.nandinidendukuri.com/filesonjoomlasite/HSROC_R_Tutorial.pdf
 
 }
 }
