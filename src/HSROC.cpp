@@ -560,7 +560,7 @@ extern "C"{
             vec_pi[i6] = rbeta( resPI_a[i6],  resPI_b[i6]);                 
             matrix_PI[(big_loop*(*n_studies)) + i6] = vec_pi[i6];
             //PI_file << vec_pi[i6] << " ";
-            if(!finite(vec_pi[i6]))
+            if(!R_FINITE(vec_pi[i6]))
             {
                 Rprintf("Undefined real result. \n");
                 Rprintf("Please check your prior distributions and initial values and call HSROC() again.\n");
@@ -690,7 +690,7 @@ extern "C"{
             vec_S2[i9a] = function2(*gold_std, a_se2[i9a], b_se2[i9a] );
             matrix_S2[(big_loop*(*refstd)) + i9a] = vec_S2[i9a];
             //S2_file << vec_S2[i9a] << " ";
-            if(!finite(vec_S2[i9a]))
+            if(!R_FINITE(vec_S2[i9a]))
             {
                 Rprintf("Undefined real result. \n");
                 Rprintf("Please check your prior distributions and initial values and call HSROC() again.\n");
@@ -712,7 +712,7 @@ extern "C"{
             vec_C2[i9b] = function2(*gold_std, a_sp2[i9b], b_sp2[i9b] );
             matrix_C2[(big_loop*(*refstd)) + i9b] = vec_C2[i9b];
             //C2_file << vec_C2[i9b] << " ";
-            if(!finite(vec_C2[i9b]))
+            if(!R_FINITE(vec_C2[i9b]))
             {
                 Rprintf("Undefined real result. \n");
                 Rprintf("Please check your prior distributions and initial values and call HSROC() again.\n");
@@ -801,7 +801,7 @@ extern "C"{
             vec_theta[i11] = Truncnorm2(*vec_CTHETA, *vec_sigma_theta, lower_t[i11], upper_t[i11] )   ;
             matrix_theta[(big_loop*(*n_studies)) + i11] = vec_theta[i11];
             //theta_file << vec_theta[i11] << " ";
-            if(!finite(vec_theta[i11]))
+            if(!R_FINITE(vec_theta[i11]))
             {
                 Rprintf("Undefined real result. \n");
                 Rprintf("Please check your prior distributions and initial values and call HSROC() again.\n");
@@ -844,7 +844,7 @@ extern "C"{
             vec_alpha[i14] = rnorm(B[i14]/(2.0*A[i14]), 1.0/sqrt(A[i14]));
             matrix_alpha[(big_loop*(*n_studies)) + i14] = vec_alpha[i14];
             //alpha_file << vec_alpha[i14] << " ";
-            if(!finite(vec_alpha[i14]))
+            if(!R_FINITE(vec_alpha[i14]))
             {
                 Rprintf("Undefined real result. \n");
                 Rprintf("Please check your prior distributions and initial values and call HSROC() again.\n");
@@ -862,12 +862,13 @@ extern "C"{
         // CONDITIONAL DISTRIBUTION OF LAMBDA
         // *****************************************************
         GetRNGstate();
-        *vec_LAMBDA = Truncnorm2(mean(*n_studies,vec_alpha),  *vec_sigma_alpha/sqrt(*n_studies), *LAMBDA_lower, *LAMBDA_upper )   ;
+        double nstudies = *n_studies ;
+        *vec_LAMBDA = Truncnorm2(mean(*n_studies,vec_alpha),  *vec_sigma_alpha/sqrt(nstudies), *LAMBDA_lower, *LAMBDA_upper )   ;
         matrix_LAMBDA[ big_loop ] = *vec_LAMBDA;
         //LAMBDA_file << *vec_LAMBDA << " ";
         //LAMBDA_file << endl;
         PutRNGstate();
-        if(!finite(*vec_LAMBDA))
+        if(!R_FINITE(*vec_LAMBDA))
         {
             Rprintf("Undefined real result. \n");
             Rprintf("Please check your prior distributions and initial values and call HSROC() again.\n");
@@ -889,7 +890,7 @@ extern "C"{
         //beta_file << *vec_beta << " ";
         //beta_file << endl;
         PutRNGstate();
-        if(!finite(*vec_beta))
+        if(!R_FINITE(*vec_beta))
         {
             Rprintf("Undefined real result. \n");
             Rprintf("Please check your prior distributions and initial values and call HSROC() again.\n");
@@ -903,12 +904,12 @@ extern "C"{
         // CONDITIONAL DISTRIBUTION OF CAPITAL_THETA
         // *****************************************************
         GetRNGstate();
-        *vec_CTHETA = Truncnorm2(mean(*n_studies,vec_theta),  *vec_sigma_theta/sqrt(*n_studies), *CTHETA_lower, *CTHETA_upper )   ;
+        *vec_CTHETA = Truncnorm2(mean(*n_studies,vec_theta),  *vec_sigma_theta/sqrt(nstudies), *CTHETA_lower, *CTHETA_upper )   ;
         matrix_CTHETA[ big_loop ] = *vec_CTHETA;
         //CTHETA_file << *vec_CTHETA << " ";
         //CTHETA_file << endl;
         PutRNGstate();
-        if(!finite(*vec_CTHETA))
+        if(!R_FINITE(*vec_CTHETA))
         {
             Rprintf("Undefined real result. \n");
             Rprintf("Please check your prior distributions and initial values and call HSROC() again.\n");
@@ -937,7 +938,7 @@ extern "C"{
             matrix_sd_alpha[ big_loop ] = *vec_sigma_alpha;
             //sd_alpha_file << *vec_sigma_alpha << " ";
             //sd_alpha_file << endl;
-            if(!finite(*vec_sigma_alpha))
+            if(!R_FINITE(*vec_sigma_alpha))
             {
                 Rprintf("Undefined real result. \n");
                 Rprintf("Please check your prior distributions and initial values and call HSROC() again.\n");
@@ -960,7 +961,7 @@ extern "C"{
             matrix_sd_alpha[ big_loop ] = *vec_sigma_alpha;
             //sd_alpha_file << *vec_sigma_alpha << " ";
             //sd_alpha_file << endl;
-            if(!finite(*vec_sigma_alpha))
+            if(!R_FINITE(*vec_sigma_alpha))
             {
                 Rprintf("Undefined real result. \n");
                 Rprintf("Please check your prior distributions and initial values and call HSROC() again.\n");
@@ -983,7 +984,7 @@ extern "C"{
             matrix_sd_alpha[ big_loop ] = *vec_sigma_alpha;
             //sd_alpha_file << *vec_sigma_alpha << " ";
             //sd_alpha_file << endl;
-            if(!finite(*vec_sigma_alpha))
+            if(!R_FINITE(*vec_sigma_alpha))
             {
                 Rprintf("Undefined real result. \n");
                 Rprintf("Please check your prior distributions and initial values and call HSROC() again.\n");
@@ -1017,7 +1018,7 @@ extern "C"{
             matrix_sd_theta[ big_loop ] = *vec_sigma_theta;
             //sd_theta_file << *vec_sigma_theta << " ";
             //sd_theta_file << endl;
-            if(!finite(*vec_sigma_theta))
+            if(!R_FINITE(*vec_sigma_theta))
             {
                 Rprintf("Undefined real result. \n");
                 Rprintf("Please check your prior distributions and initial values and call HSROC() again.\n");
@@ -1040,7 +1041,7 @@ extern "C"{
             matrix_sd_theta[ big_loop ] = *vec_sigma_theta;
             //sd_theta_file << *vec_sigma_theta << " ";
             //sd_theta_file << endl;
-            if(!finite(*vec_sigma_theta))
+            if(!R_FINITE(*vec_sigma_theta))
             {
                 Rprintf("Undefined real result. \n");
                 Rprintf("Please check your prior distributions and initial values and call HSROC() again.\n");
@@ -1063,7 +1064,7 @@ extern "C"{
             matrix_sd_theta[ big_loop ] = *vec_sigma_theta;
             //sd_theta_file << *vec_sigma_theta << " ";
             //sd_theta_file << endl;
-            if(!finite(*vec_sigma_theta))
+            if(!R_FINITE(*vec_sigma_theta))
             {
                 Rprintf("Undefined real result. \n");
                 Rprintf("Please check your prior distributions and initial values and call HSROC() again.\n");
@@ -1084,7 +1085,7 @@ extern "C"{
             vec_S1[i15] = 1.0-pnorm( exp((-(*vec_beta))/2.0)*(vec_theta[i15] - (vec_alpha[i15]/2.0)), 0, 1, 1, 0 );
             matrix_S1[(big_loop*(*n_studies)) + i15] = vec_S1[i15];
             //S1_file << vec_S1[i15] << " ";
-            if(!finite(vec_S1[i15]))
+            if(!R_FINITE(vec_S1[i15]))
             {
                 Rprintf("Undefined real result. \n");
                 Rprintf("Please check your prior distributions and initial values and call HSROC() again.\n");
@@ -1102,7 +1103,7 @@ extern "C"{
             vec_C1[i16] = pnorm( exp(*vec_beta/2.0)*(vec_theta[i16] + (vec_alpha[i16]/2.0)), 0, 1, 1, 0 );
             matrix_C1[(big_loop*(*n_studies)) + i16] = vec_C1[i16];
             //C1_file << vec_C1[i16] << " ";
-            if(!finite(vec_C1[i16]))
+            if(!R_FINITE(vec_C1[i16]))
             {
                 Rprintf("Undefined real result. \n");
                 Rprintf("Please check your prior distributions and initial values and call HSROC() again.\n");

@@ -1,0 +1,1179 @@
+%\VignetteIndexEntry{User manual}
+\documentclass[12pt]{article}
+% ***************************
+ \oddsidemargin  0.0in
+    \evensidemargin 0.0in
+    \textwidth      6.5in
+    \headheight     0.0in
+    \topmargin      -0.1in
+    \textheight 9.0in
+    \parindent 0 cm
+    \parskip 0.2in
+    \renewcommand{\baselinestretch}{1.5}
+% ***************************
+\usepackage{lscape}
+\usepackage{color}
+\usepackage{graphicx}
+\usepackage{wrapfig}
+\usepackage[ansinew]{inputenc}
+\usepackage{latexsym}
+\usepackage{amsthm}
+\usepackage{amssymb,amsmath}
+\newcommand{\mar}{\marginpar}
+\newcommand{\scr}{\scriptsize}
+\usepackage[font=small,labelsep=none]{caption}
+
+
+\title{\textit{HSROC} : An R package for Bayesian meta-analysis of diagnostic test accuracy}
+
+\author{Ian Schiller$^{3}$, Nandini Dendukuri$^{1,2,3}$, 
+\\
+\\
+\\
+\small{1: Department of Epidemiology and Biostatistics, McGill University, Montreal} \\
+\small{2: Technology Assessment Unit, McGill University Health Center, Montreal}\\
+\small{3: Division of Clinical Epidemiology, McGill University Health Center, Montreal} \\
+\\
+\\
+\\
+\\
+\\
+\\
+\\
+\\
+\\
+}
+\begin{document}
+\maketitle
+
+
+\newpage
+\section{Introduction}
+This document is intended to serve as a guide for the usage of the HSROC package to be used within the free statistical software environment, R \cite{R_soft}.  Therefore, the main goal is to describe the functions in the package via different examples without emphasing the statistical  theory behind them.  The likelihood of the HSROC model and prior distributions appear in the appendix.  A more detailed article is currently under review.  
+
+The HSROC package consists of 4 functions and 2 data sets.  The two main functions are \textit{HSROC} and \textit{HSROCSummary}.   \textit{HSROC}, which must be run first, is used to implement a Gibbs sampler while \textit{HSROCSummary} produces summaries for the HSROC model parameters.  The remaining 2 functions are secondary functions :  \textit{simdata} simulates a dataset based on the HSROC diagnostic meta-analysis model, while \textit{beta.parameter} returns the shape parameters of the \textit{Beta($\alpha$, $\beta$)} probability corresponding to a given range. 
+
+In the following sections, we will present 3 examples to explain how to make use of the functions within the HSROC package.  In section \ref{gold} we present a simple example where a test under evaluation is compared to a perfect reference test when both tests are independent given the true disease status.  In section \ref{ex2}, we present an example where the test under evalutation is now compared to an imperfect reference test, while both tests remain conditionally independent from each other.  In section \ref{simulation} we show how to simulate  data from a HSROC diagnostic meta-analysis model
+
+
+
+
+ 
+\section{Example 1 : Meta-Analysis in the presence of a gold standard reference test assuming conditional independence} \label{gold}
+We start with the simplest mode, where the reference test is assumed to be a gold standard (i.e. sensitivity and specificity of the reference test both equal to $100\%$).  
+
+For this example, we use data on magnetic resonance (MR) imaging from 10 studies reviewed in a study by  Scheidler et al \cite{Scheidler1997a}.  This is a subset of the illustration dataset used in the paper describing the HSROC model of Rutter and Gatsonis \cite{Rutter2001a}.  
+
+
+
+\subsection{Data preparation} \label{data_prep}
+
+After having installed the package, the library can be loaded with the following command :
+
+\begin{verbatim}
+> library(HSROC) 
+\end{verbatim}
+
+The data on MR imaging is included in the library and can be loaded as follows : 
+
+\begin{verbatim}
+> data(MRI)
+> MRI
+   ++ +- -+ --
+1   9  2  2  44
+2   3  6  5  32
+3   3  2  1  16
+4   3  1 12  44
+5   1  1  6  16
+6   7  2 22 167
+7  12  4  4  29
+8  23  5 14 230
+9   8  5  5  53
+10 16  2  2  22
+\end{verbatim}
+
+The columns $++, +-, -+, -- $ represent the results of the cross tabulation between MRI (the test under evaluation) and histologic/cytologic specimens obtained by surgery or lymph node biopsy (reference test).   The colummn headings $++, +-, -+, -- $ correspond to (MRI +, reference +), (MRI +, reference -), (MRI -, reference +) and (MRI -, reference -), respectively.
+
+In order to estimate the parameters of the conditional independence model, we use the function  \textit{HSROC}.  The arguments of the function are as follows : 
+
+\begin{verbatim}
+> args(HSROC)
+function (data, iter.num, init = NULL, sub_rs = NULL, first.run = TRUE, 
+    path = getwd(), refresh = 100, prior.SEref = NULL, prior.SPref = NULL, 
+    prior_PI = c(0, 1), prior_LAMBDA = c(-3, 3), prior_THETA = c(-1.5, 
+        1.5), prior_sd_alpha = list(0, 2, "sd"), prior_sd_theta = list(0, 
+        2, "sd"), prior_beta = c(-0.75, 0.75)) 
+
+\end{verbatim}
+
+This function results in drawing a sample from the posterior distribution of the model via a single chain gibbs sampler.  
+
+A number of arguments, such as those determining the prior distributions, have default values.   In particular, the default values \textit{prior.SEref = NULL} and \textit{prior.SPref = NULL} define a gold standard reference test.  The Gibbs sampler requires initial values which we will provide in this example.  Therefore, the only argument for which we will alter the default in this example, is the \textit{init} argument.  When this argument is left equal to its default value, the initial values required by the Gibbs sampler are  randomly selected by the \textit{HSROC} function itself based on the prior distributions.  
+
+The \textit{init} argument is a list object composed of the initial values of the within-study parameters as the first element of the list and the initial values of the between-study parameters as the second element of the list. The within-study element must be a matrix-like object with each column corresponding to a different parameter and each row corresponding to a different study, while the between-study element must be a vector with each element corresponding to a different parameter.  Suppose that the following inital values are desired for each of  the within-study parameters $\alpha_i$  (diagnostic accuracy of study $i$), $\theta_i$ (the cut-off value for defining a positive test in study $i$), $S_{1i}$ (sensitivity of study $i$ for the test under evaluation ), $C_{1i}$ (specificity of study $i$ for the test under evaluation ), and $\pi_i$ (the prevalence of study $i$), for the MR meta-analysis 
+
+\begin{verbatim}
+
+> init.alpha = c(2.51, 2.54, 3.81, 2.41, 2.64, 2.70, 3.31, 3.39, 3.11, 2.99)
+> init.theta = c(-0.51, -0.39, 0.33, -2.06, -0.14, -0.08, 1.11, 0.38, -0.86, 
++-0.38)
+> init.s1 = rep(0.9,10)
+> init.c1 = rep(0.9,10)
+> init.pi = c(0.38, 0.17, 0.78, 0.07, 0.74, 0.84, 0.52, 0.95, 0.07, 0.56)
+
+\end{verbatim}
+
+We first create a matrix of within-study initial values
+\begin{verbatim}
+> init_within = cbind(init.alpha, init.theta, init.s1, init.c1, init.pi)
+\end{verbatim}
+
+The ordering of the initial values in the \textit{cbind} function above is important and must not be altered.  Placing \textit{init.theta} before \textit{init.alpha}, that is
+\begin{verbatim}
+> init_within = cbind(init.theta, init.alpha, init.s1, init.c1, init.pi)
+\end{verbatim}
+will result in initialising the  $\alpha_i$ parameters with the initial values of $\theta_i$ and vice-versa.  This could possibly lead to slower convergence of the Gibbs sampler in case the starting values are not suitable.
+ 
+Now, for the between-study parameters $\Theta$ (the overall mean cut-off value for defining a positive test),  $\sigma_{\theta}$ (the between-study standard deviation in the cut-off), $\Lambda$ (the overall diagnostic accuracy), $\sigma_{\alpha}$ (the between-study standard deviation of the difference in means), and  $\beta$ (the logarithm of the ratio of the standard deviation of test results among patients with the disease and among patients without the disease),  let's suppose the following starting values are to be used :
+
+\begin{verbatim}
+> init.THETA = -0.16
+> init.sig.theta = 0.75
+> init.LAMBDA = 2.58
+> init.sig.alpha = 0.5
+> init.beta = 0.25
+\end{verbatim}
+
+We then create the vector of between-study initial values as follows : 
+\begin{verbatim}
+> init_between = c(init.THETA, init.sig.theta, init.LAMBDA, init.sig.alpha, init.beta)
+\end{verbatim}
+For the same reason discussed above, the ordering in the vector above must be kept as is.
+
+Finally, we simply need to merge the within-study and between-study initial values created above into a list, as follow
+
+\begin{verbatim}
+> init = list(init_within, init_between)
+\end{verbatim}
+
+\subsection{Running the Gibbs sampler} \label{run_Gibbs}
+
+To complete the function call we need to provide two additional arguments  \textit{data} and \textit{iter.num} for the data set and number of gibbs sampler iterations.  In this example, we will run the Gibbs sampler for 50,000 iterations.  We thus make the following call
+
+\begin{verbatim}
+> HSROC(data=MRI, iter.num=50000, init=init  ) 
+\end{verbatim}
+
+Rather than manage very large matrices of posterior samples for each parameter within R, that grow in size as the number of iterations increases, the function creates text files in the default working directory, or in any specified working directory through the \textit{path} argument.  This should help computational speed as the number of iterations increase.  Once the function has reached the selected number of iterations, the following message will appear
+
+\begin{verbatim}
+[1] The files created during the Gibbs sampler process are in "C:\... "
+\end{verbatim}
+where $\text{C}: \backslash ...$ is the working directory where the text files were created and saved. 
+
+
+
+\subsection{Interpreting the output files} \label{HSROCSummary}
+The \textit{HSROCSummary} function can be used to obtain descriptive statistics and graphs using the posterior sample.  The arguments of the function are as follows
+
+\begin{verbatim}
+> args(HSROCSummary)
+function (data, burn_in = 0, iter.keep = NULL, Thin = 1, sub_rs = NULL, 
+    point_estimate = c("median", "mean"), path = getwd(), chain = NULL, 
+    tv = NULL, digit = 6, print_plot = FALSE)
+\end{verbatim}
+
+For our example, we call the function as follows : 
+
+\begin{verbatim}
+> HSROCSummary(data = MRI, burn_in=10000, Thin=2, print_plot=TRUE )
+\end{verbatim}
+
+The descriptive statistics created by the function are discussed in section \ref{descriptive_stats}.  The argument \textit{data} simply needs to be set equal to the dataset.  In the case of \textit{burn\_in}, it indicates how many burn-in iterations are to be dropped before calculation of the estimates.   The argument \textit{Thin}  defines the thinning interval.  Finally,  \textit{$print\_plot = TRUE$} allows the creation of graphical tools to help the user assess if the convergence of the Gibbs sampler has been achieved.  The different plots produced by the function will be discussed in section \ref{graph}.  
+
+\subsubsection{Descriptive statistics} \label{descriptive_stats}
+The \textit{HSROCSummary} function returns a summary of the results in the R GUI and more detailed results in a text file within the working directory.  In the R GUI it lists the point estimates and $95\%$ highest posterior density (HPD) credible intervals for the between-study and within-study parameters.   The text file that is saved in the working directory is divided into three sections.
+
+ 
+%\begin{verbatim}
+%$`Between-study parameters`
+%            median estimate       HPD.low  HPD.high
+%THETA             0.9002032  0.4356693000 1.3681140
+%LAMBDA            2.0537540  1.3154650000 2.6971370
+%beta             -0.3480303 -0.7492667000 0.2591176
+%sigma.alpha       0.5113699  0.0003751073 1.0825890
+%sigma.theta       0.5113077  0.2282934000 0.9264843
+%S Overall         0.5565287  0.3503762000 0.7554895
+%C Overall         0.9482030  0.8971683000 0.9845854
+%S1_new            0.5489837  0.1571603000 1.0000000
+%C1_new            0.9692262  0.7440465000 0.0000000
+%\end{verbatim}
+%In this example, $\Theta$, was estimated to be 1.068812 with a $95\%$ highest posterior density interval of (0.5187357, 1.594024).  Similarly, estimation and HPD %interval are given for $\Lambda$, $\beta$, $\sigma_{\alpha}$ and $\sigma_{\theta}$.   Finally, estimation of the overall sensitivity (S) and specificity (C) of the test %under evaluation, which are derived from $\Theta$, $\Lambda$ and $\beta$, are also provided.  The function will also returns posterior predictive values of %sensitivity and specificity of a new study that has not yet taken place.  They are labeled $\text{S1\_new}$ and $\text{C1\_new}$ respectively.
+%
+%
+%The output also includes estimation of the within-study parameters $\theta$, $\alpha$, prevalence $\pi$, sensitivity and specificity of the test under evaluation for %each individual study.
+%
+%\begin{verbatim}
+%$`Within-study parameters`
+%, , theta
+%
+%         median estimate   HPD lower HPD upper
+%Study 1        0.6859822  0.15588280 1.2104300
+%Study 2        0.7119867  0.17963720 1.2035800
+%Study 3        0.6106668 -0.03977413 1.2650660
+%Study 4        1.4446025  0.89338320 2.0016540
+%Study 5        1.2743945  0.58646090 1.9718690
+%Study 6        1.5500820  1.12019900 1.9749240
+%Study 7        0.5048660  0.01564330 0.9821659
+%Study 8        1.0487930  0.64916410 1.4283540
+%Study 9        0.7294479  0.24511360 1.1733410
+%Study 10       0.3965550 -0.17872640 0.9558200
+%
+%, , alpha
+%
+%         median estimate HPD lower HPD upper
+%Study 1         2.410118 1.5359400  3.378053
+%Study 2         1.500841 0.5126677  2.541481
+%Study 3         2.051515 0.9271920  3.013398
+%Study 4         1.857549 0.7734692  2.750749
+%Study 5         1.703469 0.4348399  2.709900
+%Study 6         2.061365 1.0680970  2.905353
+%Study 7         2.045639 1.1910180  2.778655
+%Study 8         2.489494 1.7268060  3.212871
+%Study 9         1.969492 1.1414760  2.727287
+%Study 10        2.393093 1.5090520  3.310645
+%
+%, , pi
+%
+%         median estimate  HPD lower HPD upper
+%Study 1        0.1997384 0.10519050 0.3036366
+%Study 2        0.1837717 0.08379872 0.2967614
+%Study 3        0.2010107 0.06256807 0.3672681
+%Study 4        0.2553467 0.15827470 0.3725284
+%Study 5        0.3022653 0.14436800 0.4815735
+%Study 6        0.1486657 0.10363370 0.2011791
+%Study 7        0.3307813 0.20872540 0.4630952
+%Study 8        0.1375542 0.09852950 0.1790924
+%Study 9        0.1885861 0.10518040 0.2807352
+%Study 10       0.4322683 0.28531100 0.5757142
+%
+%, , S1
+%
+%         median estimate  HPD lower HPD upper
+%Study 1        0.7244552 0.50725560 0.9310050
+%Study 2        0.5217090 0.22224210 0.7895596
+%Study 3        0.6800224 0.37817400 0.9536745
+%Study 4        0.2676138 0.08645935 0.4753689
+%Study 5        0.3042816 0.06116177 0.5905006
+%Study 6        0.2700175 0.12817060 0.4234294
+%Study 7        0.7235862 0.53187160 0.8966516
+%Study 8        0.5893912 0.43543120 0.7330580
+%Study 9        0.6174236 0.39814570 0.8313680
+%Study 10       0.8238722 0.65555710 0.9672905
+%
+%, , C1
+%
+%         median estimate HPD lower HPD upper
+%Study 1        0.9454862 0.8828247 0.9902935
+%Study 2        0.8897251 0.7858538 0.9649927
+%Study 3        0.9160350 0.8009432 0.9860688
+%Study 4        0.9779424 0.9347680 0.9990802
+%Study 5        0.9637773 0.8771887 0.9992096
+%Study 6        0.9853923 0.9672432 0.9981658
+%Study 7        0.9014384 0.8084996 0.9689077
+%Study 8        0.9737362 0.9520686 0.9914334
+%Study 9        0.9256268 0.8587112 0.9735986
+%Study 10       0.9108884 0.8070601 0.9846546
+%\end{verbatim}  
+%
+%For example, study 1's sensitivity and specificity are estimated as 0.7244552 (0.50725560, 0.9310050) and 0.9454862 (0.8828247, 0.9902935), respectively.
+
+
+%\begin{enumerate}
+%\item General settings
+
+
+%\begin{
+%}[h]
+%  \begin{center}
+%      \includegraphics[width=0.85\linewidth]{Section_1.png}
+%   \end{center}
+%   \caption{}
+%\end{figure}
+
+
+%\begin{verbatim}
+%Number of chains = 1
+%Number of iteration within a chain = 50000     Burn in within each chain = 5000
+%Thinning interval = 5
+%Total number of iteration kept = 9000
+%
+%File location :  C:/IAN DATA/R_&_G_MR/Chain1
+%
+%Date : 2010-12-03 11:52:45
+%______________________________________________________
+%
+%Perfect reference standard
+%
+%HSROC function used
+%______________________________________________________
+%SAMPLE SIZE  
+%______________________________________________________
+%
+%         Total ++ +- -+ --
+%Study  1  57  9  2  2  44
+%Study  2  46  3  6  5  32
+%Study  3  22  3  2  1  16
+%Study  4  60  3  1  12  44
+%Study  5  24  1  1  6  16
+%Study  6  198  7  2  22  167
+%Study  7  49  12  4  4  29
+%Study  8  272  23  5  14  230
+%Study  9  71  8  5  5  53
+%Study  10  42  16  2  2  22
+%\end{verbatim}   
+
+
+\begin{wrapfigure}{r}{0.6\textwidth}
+  \begin{center}
+    \includegraphics[width=0.6\textwidth]{Section_1.png}
+  \end{center}
+  \caption{}
+  \label{section_1}
+\end{wrapfigure}
+
+The first section (displayed in Figure \ref{section_1}) lists some of the general settings.  The number of gibbs sampler chains used in this example was 1. A total of 50,000 iterations were used with a burn in of 10,000.  Every second value was kept for estimation (the thinning interval).  This left us with a sample of 20,000 values drawn from the posterior distribution of each parameter we are interested in.   This section also lists the location of the file on the hard drive, the date of creation of the summary file and the nature of the reference test (perfect or imperfect).  The data set is  also listed.  
+
+%\item Prior distribution
+
+
+
+%\begin{verbatim}
+%______________________________________________________
+%PRIOR INFORMATION  
+%______________________________________________________
+%
+%
+%
+%Prior of prevalence (pi) is  beta ( 1 , 1 ), <=> pi in [ 0 , 1 ]
+%
+%Prior of beta is Uniform( -1.0986 , 1.0986 )
+%Prior of THETA is Uniform( -3 , 3 )
+%Prior of LAMBDA is Uniform( 0 , 6 )
+%Prior of sigma_alpha is uniform( 1e-10 , 2 )
+%Prior of sigma_theta is uniform( 1e-10 , 1.5 )
+%Range of r.ij is [ -12 , 12 ]
+%\end{verbatim}
+
+\begin{wrapfigure}{r}{0.6\textwidth}
+  \begin{center}
+    \includegraphics[width=0.6\textwidth]{Section_2.png}
+  \end{center}
+  \caption{}
+  \label{section_2}
+\end{wrapfigure}
+
+The next section of the output gives a summary of the prior distributions used  (Figure \ref{section_2}), which happen to be the default prior distributions in this example.  The prior distribution used for the prevalence was a \text{Beta(1,1)}, distribution, that is a beta distribution with scale and shape parameters equal to $1$.   This is equivalent to a uniform prior for the prevalence, alowing all possible values to be equally likely.  The log of the ratio between the two standard deviations, $\beta$ was assumed to follow a $U(-0.75, 0.75)$ distribution.  The overall mean cut-off $\Theta$ was assigned a uniform distribution ranging from $-1.5$ to $1.5$.   The pooled diagnostic accuracy $\Lambda$ followed a uniform distribution over $-3$ to $3$.  Finally, parameters $\sigma_{\alpha}$ and $\sigma_{\theta}$ were both assumed to follow $U(0, 2)$ distribution.     
+
+
+
+%\item Descriptive statistics
+
+The final section lists descriptive statistics for the parameters of the model.  In addition to the point estimate and highest posterior density (HPD) intervals, it also includes Monte Carlo (MC) error and standard deviation of the posterior sample.  The MC error is calculated via the batch mean method described in Ntzoufras \cite{Ntzoufras2009a}.  For this reason, the user may note that no estimation will be provided if less than 100 iterations are left, once the burn in and thinning are taken into account.  In this situation, the following message would be displayed
+
+\begin{verbatim}
+> Error in HSROCSummary(data = MRI, burn_in = 1, Thin = 1, i = 50, print_plot = T) : 
+  You don't have enough iterations to estimate the MC error.  
+ After taking into account the "burn in" and "thinning interval", 
+ you need at least 100 iterations to proceed.
+\end{verbatim}
+
+The addition of the MC error and the standard error provide means for examining the precision of the estimation.  One might want to run the Gibbs sampler until the MC error is sufficiently small.  For example, a desirable criterion might be to have the MC error of each parameter smaller than  $10\%$ of its posterior standard deviation.  The estimates of the between-study parameters and within-study parameters are shown in Figures \ref{section_3} and \ref{section_4} respectively.
+
+\begin{wrapfigure}{r}{0.6\textwidth}
+  \begin{center}
+    \includegraphics[width=0.6\textwidth]{Section_3.png}
+  \end{center}
+  \caption{}
+  \label{section_3}
+\end{wrapfigure}
+
+For example, the cut-off parameter $\Theta$ was estimated to be $0.900203$ with a $95\%$ highest posterior density interval of (0.435669, 1.368114).   The standard deviation and MC error were estimated to be $0.239167$ and $0.011831$,   respectively.   We see that the MC error is smaller than $10\%$ of the posterior standard deviation for $\Theta$.   Other estimates included here are those of $\Lambda$, $\beta$, $\sigma_{\theta}$ and $\sigma_{\alpha}$.  The estimates of the pooled sensitivity and specificity, denoted S overall and C overall, are obtained as functions of $\Theta$, $\Lambda$ and $\beta$. A similar analysis of the MR imaging data was performed by Rutter and Gatsonis \cite{Rutter2001a} using an HSROC model with a logit link function.  They reported a pooled sensitivity estimate of $0.541$ with a $95\%$ equal-tail credible interval of $(0.286, 0.771)$ and a pooled specificity estimate of $0.953$ with a $95\%$ equal-tail credible interval of $(0.907, 0.981)$.   Even though both models used a different link function, it is reassuring to notice that our estimates of S overall and C overall are satisfactorily close to the estimates of Rutter and Gatsonis.  The difference noticed between their credible intervals and ours comes from the fact that the \textit{HSROCSummary} function returns $95\%$  highest posterior density intervals. 
+
+
+Figure \ref{section_4} displays a portion of the within-study parameter estimates.  We see that estimates for individual studies are grouped by parameters.
+ \newpage .
+
+\begin{wrapfigure}{r}{0.6\textwidth}
+ \begin{center}
+    \includegraphics[width=0.6\textwidth]{Section_4.png}
+  \end{center}
+  \caption{}
+  \label{section_4}
+\end{wrapfigure}
+
+For example, the estimates of $\theta_1$ (the cut-off in study 1), $\theta_2$, $\theta_3$, \dots, $\theta_{10}$ are shown in the first sub-section of the within-study parameters section.  Just like the between-study estimates of Figure \ref{section_3}, the standard deviation, MC error and $95\%$ HPD interval are given.    
+
+
+ 
+%\begin{verbatim}
+%Estimation of parameters (Point estimate = median ) 
+%_____________________________________________________
+%
+%       Estimate Standard_Dev MC_error C.I._lower C.I._upper
+%
+%THETA        1.068812  0.274912  0.021578  0.518736  1.594024
+%LAMBDA       2.330481  0.432766  0.035811  1.499497  3.162159
+%beta         -0.628606  0.348728  0.035898  -1.098612  0.052898
+%sigma.alpha  0.533842  0.288414  0.006171  0.042386  1.133765
+%sigma.theta  0.500194  0.184511  0.004252  0.214732  0.898422
+%S overall           0.555505  0.115372  0.001609  0.330093  0.793315
+%C overall           0.948377  0.020592  0.000299  0.904396  0.981335
+%
+%
+%_____________________________________________________
+%Estimation of theta  
+%______________________________________________________
+%
+%         Estimate Standard_Dev MC_error C.I._lower C.I._upper
+%
+%Study  1  0.860113  0.310568  0.022517  0.247536  1.447316
+%Study  2  0.881737  0.2873  0.021203  0.331254  1.447008
+%Study  3  0.776888  0.369671  0.022362  0.05982  1.499943
+%Study  4  1.572302  0.3005  0.017606  0.973461  2.16634
+%Study  5  1.434864  0.368448  0.019665  0.720528  2.172532
+%Study  6  1.690243  0.255245  0.021016  1.179807  2.180733
+%Study  7  0.673293  0.289074  0.020723  0.103973  1.238327
+%Study  8  1.228657  0.261322  0.025547  0.711116  1.723713
+%Study  9  0.879601  0.286111  0.023349  0.330831  1.438002
+%Study  10  0.580442  0.332364  0.02445  -0.066587  1.222435
+%______________________________________________________
+%Estimation of alpha  
+%______________________________________________________
+%
+%         Estimate Standard_Dev MC_error C.I._lower C.I._upper
+%
+%Study  1  2.700671  0.52729  0.034733  1.714601  3.755001
+%Study  2  1.748364  0.554005  0.031915  0.675179  2.807159
+%Study  3  2.316988  0.568823  0.033764  1.246437  3.461234
+%Study  4  2.164326  0.588676  0.042731  0.964932  3.306374
+%Study  5  1.991956  0.646077  0.037645  0.6291  3.131467
+%Study  6  2.419472  0.556289  0.05032  1.372163  3.537899
+%Study  7  2.274474  0.456196  0.028861  1.436359  3.203248
+%Study  8  2.818421  0.477716  0.04226  1.897867  3.735595
+%Study  9  2.221341  0.464796  0.033983  1.342759  3.147746
+%Study  10  2.64231  0.513923  0.031876  1.69258  3.677036
+%______________________________________________________
+%Estimation of prevalence PI  
+%______________________________________________________
+%
+%         Estimate Standard_Dev MC_error C.I._lower C.I._upper
+%
+%Study  1  0.200119  0.051382  0.000523  0.108975  0.306227
+%Study  2  0.182675  0.056266  0.00055  0.085174  0.299181
+%Study  3  0.199312  0.081447  0.000919  0.063814  0.368706
+%Study  4  0.256616  0.055598  0.000647  0.153395  0.365721
+%Study  5  0.303367  0.088467  0.000763  0.151734  0.489451
+%Study  6  0.149338  0.025366  0.000297  0.101568  0.20002
+%Study  7  0.332166  0.065764  0.000463  0.208877  0.464058
+%Study  8  0.137889  0.020754  0.000213  0.100133  0.180248
+%Study  9  0.189217  0.046037  0.000396  0.10521  0.282398
+%Study  10  0.429648  0.074182  0.000578  0.289745  0.579878
+%______________________________________________________
+%Estimation of sensitivity of test 1 (S1)  
+%______________________________________________________
+%
+%         Estimate Standard_Dev MC_error C.I._lower C.I._upper
+%
+%Study  1  0.744495  0.114394  0.002129  0.513037  0.939111
+%Study  2  0.492419  0.152601  0.003991  0.204451  0.778104
+%Study  3  0.696799  0.161134  0.002242  0.366937  0.963362
+%Study  4  0.255407  0.10392  0.00252  0.073412  0.466192
+%Study  5  0.276798  0.143013  0.003855  0.032935  0.560575
+%Study  6  0.259412  0.07729  0.002319  0.118737  0.415245
+%Study  7  0.734964  0.098083  0.002006  0.534987  0.905968
+%Study  8  0.597542  0.079379  0.001857  0.447443  0.755804
+%Study  9  0.620589  0.115274  0.002478  0.383937  0.828479
+%Study  10  0.840205  0.083285  0.002202  0.671313  0.976106
+%______________________________________________________
+%Estimation of specificity of test 1 (C1)  
+%______________________________________________________
+%
+%       Estimate Standard_Dev MC_error C.I._lower C.I._upper
+%
+%Study  1  0.946708  0.02751  0.000566  0.888726  0.989893
+%Study  2  0.897735  0.044759  0.001332  0.801379  0.965861
+%Study  3  0.920748  0.04812  0.001036  0.814052  0.983889
+%Study  4  0.973738  0.020233  0.000587  0.9289  0.998768
+%Study  5  0.961861  0.035438  0.00057  0.885639  0.99925
+%Study  6  0.983189  0.009333  0.000306  0.963445  0.996969
+%Study  7  0.907579  0.040389  0.000992  0.817351  0.967829
+%Study  8  0.973098  0.010676  0.000319  0.950678  0.990907
+%Study  9  0.927352  0.029849  0.000963  0.865905  0.976817
+%Study  10  0.917246  0.044942  0.001301  0.822816  0.98691
+%\end{verbatim}
+
+%\end{enumerate}
+
+\subsubsection{The graphical summary} \label{graph}
+
+The \textit{HSROCSummary} function creates various plots to help the user judge if the descriptive statistics of section \ref{descriptive_stats} are reliable.      Among them, a trace plot for each parameter can be used to help evaluate whether the Gibbs sampler has converged.  Each trace plot is a scatter plot of the  posterior sample of a single parameter vs the iteration number of the Gibbs sampler.  The trace plots for the sensitivity of MRI in studies 1, 2, 3, 6, 7 and 8 are shown in Figure \ref{trace_single}.   
+
+\begin{figure}[h]
+  \begin{center}
+  %    \includegraphics[height=60mm]{SROC.jpg}
+      \includegraphics[width=0.85\linewidth]{Trace_plot_1_chain_2.png}
+   \end{center}
+   \caption{}
+   \label{trace_single}	
+\end{figure}
+
+
+For our example, we can see that convergence seems to be achieved fairly quickly.    
+
+Another graphical summary produced by the \textit{HSROCSummary} function is the density plot.  It plots a smoothed posterior kernel density function for each parameter.    Figure \ref{density} shows density plots for some of the between-study parameters.  
+
+\begin{figure}[h]
+  \begin{center}
+  %    \includegraphics[height=60mm]{SROC.jpg}
+      \includegraphics[width=0.85\linewidth]{Density_2.png}
+   \end{center}
+   \caption{}
+   \label{density}	
+\end{figure}
+
+%\newpage
+
+Finally, the function also produce a summary receiver operating characteristic (SROC) curve. The SROC curve summarizes the relationship between sensitivity and (1 - specificity) across studies, taking into account the between-study heterogeneity.  The SROC curve for the MRI data is shown in Figure \ref{sroc_1}. Individual studies are depicted by a clear circle. The radius of the circle is proportional to the sample size of the study. The black circle marks the pooled sensitivity and specificity across the 10 studies in this meta-analysis.
+
+\begin{figure}[h]
+  \begin{center}
+  %    \includegraphics[height=60mm]{SROC.jpg}
+      \includegraphics[width=0.85\linewidth]{SROC_1.png}
+   \end{center}
+   \caption{}
+   \label{sroc_1}	
+\end{figure}
+
+%\begin{figure}[h]
+%\begin{center}
+%\begin{tabular}{cc}
+%
+%\includegraphics[width=0.5\linewidth]{Density_1.png}
+%
+%\includegraphics[width=0.5\linewidth]{Density_2.png}
+%\\
+%(a) & (b) \\
+%
+%\end{tabular}
+%\end{center}
+%\caption{}
+%\label{density}
+%\end{figure}
+
+\subsubsection{Multiple chains to assess convergence} \label{n_chains}
+Gelman and Rubin \cite{Gelman1992a} recommend running the Gibbs sampler multiple times starting from different initial values in order to assess convergence. 
+
+In our example, we have run a single chain so far with initial values given in section ~\ref{data_prep}.   Let's say we would like to run two more chains.  The idea is to repeat sections ~\ref{data_prep} and ~\ref{run_Gibbs} with a different set of initial values and a different working directory as many times as desired.  Here to run 2 more chains, we would repeat steps ~\ref{data_prep} and ~\ref{run_Gibbs} two more times.  
+
+Instead of using the default working directory, let's suppose we had previously assigned a directory to the path argument in the $\textit{HSROC}$ function. %\newpage
+\begin{verbatim}
+> dir.create("C:/MRI/Chain1")
+> HSROC(data=MRI, iter.num=50000,  init=init,  path="C:/MRI/Chain1"   )
+\end{verbatim}
+Now to run the second chain, we would make the following call
+\begin{verbatim}
+> dir.create("C:/MRI/Chain2")
+> HSROC(data=MRI, iter.num=50000,  init=init2, path="C:/MRI/Chain2"   )
+\end{verbatim}
+where \textit{init2} is our second set of initial values.  Finally, to run our third chain, we simply run
+\begin{verbatim}
+> dir.create("C:/MRI/Chain3")
+> HSROC(data=MRI, iter.num=50000, init=init3, path="C:/MRI/Chain3"   )
+\end{verbatim}
+For the sake of efficiency, one might want to run all 3 chains at the same time by running each chain in separate R windows.  In other words, we could open 3 different R sessions and run the $\textit{HSROC}$ function with respective initial values and working directory, one in each R session, simultaneously.
+
+Once all 3 chains have reached the desired number of iterations, a single call to the function \textit{HSROCSummary} will summarize all 3 chains.
+\begin{verbatim}
+> HSROCSummary(data = MRI, burn_in=10000, Thin=2, print_plot=TRUE, 
++    path="C:/MRI/All_Chains", chain=list("C:/MRI/Chain1","C:/MRI/Chain2",
++    "C:/MRI/Chain3") )
+\end{verbatim}
+Through the \textit{path} argument we define a new working directory to save all results and plots produced by the function.  The \textit{chain} argument points to the working directories where the posterior samples from each chain were previously saved.  The structure of the output remains the same as the one described in section \ref{HSROCSummary} except for the trace plot which overlays the posterior samples of all 3 chains simultaneously  (see Figure {\ref{trace1}).     
+
+
+\begin{figure}[h]
+  \begin{center}
+  %    \includegraphics[height=60mm]{SROC.jpg}
+      \includegraphics[width=0.85\linewidth]{Trace_plot.png}
+   \end{center}
+   \caption{}
+   \label{trace1}	
+\end{figure}
+
+In our example, we can see that all 3 chains (each chain represented by a different color) converged quickly to a common region of the parameter space as is desirable. 
+
+%\begin{figure}[t]
+%\begin{center}
+%\begin{tabular}{cc}
+%
+%\includegraphics[width=0.5\linewidth]{Trace_plot.png}
+%&
+%\includegraphics[width=0.5\linewidth]{Trace_plot.png}
+%\\
+%(a) & (b) \\
+%
+%\end{tabular}
+%\end{center}
+%\caption{}
+%\label{trace}
+%\end{figure}
+%
+%
+%The idea is to run the Gibbs sampler with different starting values to make sure they are not being interferring %with convergence.   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\section{Example 2 :  Meta-Analysis in the presence of multiple imperfect reference tests assuming conditional independence} \label{ex2}
+
+In this example we consider a situation where we no longer have a perfect reference standard.  We will use data from a meta-analysis of TB pleuritis where 3 different imperfect reference standards were used.  We assume that the test under evaluation is independent of the reference test in each study given the true disease status.  The data set consists of 11 primary studies of in-house nucleic acid amplification tests of the IS6110 target, a commonly used rapid test for tuberculous pleuritis. 
+
+\subsection{Data preparation} \label{data_prep2}
+
+The data set is avalaible as part of the HSROC package.
+
+\begin{verbatim}
+> data(In.house)
+> In.house
+   ++ +- -+ --
+1  11  1 14 75
+2   1  1  3 25
+3   8  0  1 16
+4  16  6  0 43
+5  16  0  1 56
+6   9  0  6 10
+7  13  0  4 25
+8  17  2  4 84
+9  7  0  3 13
+10 14  1 19 97
+11 31  7 11 63
+\end{verbatim}
+
+In order to take into account the multiple imperfect reference standards, we must make changes to the default values of three arguments  of the $\textit{HSROC}$ function seen in section \ref{data_prep}.  First, the argument $\textit{sub\_rs}$ must be set to reflect the desired number of reference standards, second, the \textit{init} argument must now include initial values of sensitivity and specificity  of the reference standards and third, prior distributions must be provided for the sensitivity and specificity of the reference standards via the arguments \textit{prior.SEref} and \textit{prior.SPref}.
+
+In our example, there were 3 reference standards.  The first reference standard was used in studies 1 and 2, the second reference standard in  studies 3 and 4 and finally, studies 5 to 11 used the third reference standard. The $\textit{sub\_rs}$ argument, is a list variable where the first element of the list corresponds to the number of different reference standards used.  The remaining elements specify the study numbers that used each reference test.  For the TB pleuritis example :
+
+\begin{verbatim}
+> REFSTD = list(3, 1:2, 3:4, 5:11)  
+\end{verbatim}
+
+In general, if the dataset includes $k$ reference tests, $\textit{sub\_rs}$ must comprise $k+1$ elements.  The next step is to define the initial values for the sensitivity and specificity of the reference standards.  We define 
+
+\begin{verbatim}
+> init.s2 = c(0.4, 0.45, 0.8)
+> init.c2 = rep(0.95,3)
+\end{verbatim}
+
+the initial values of the 3 reference standards.  That is, reference standard 1 has sensitivity $= 40\%$ and specificity $= 95\%$, reference standard 2 has sensitivity $= 45\%$ and specificity $= 95\%$ and reference standard 3 has sensitivity $= 80\%$ and specificity $= 95\%$.  We now combine  $\textit{init.s2}$ and $\textit{init.c2}$ into a single matrix
+
+\begin{verbatim}
+> init_ref = rbind(init.s2, init.c2)
+\end{verbatim}
+
+the first row being the sensitivities and second row being the specificities.  We then put these initial values together with those defined in section \ref{data_prep} as follows,  
+
+\begin{verbatim}
+> init = list(init_within, init_between, init_ref)
+\end{verbatim}
+
+The prior information on the sensitivity and specificity of the reference tests can be provided in terms of the plausible ranges of these parameters.  Based on a literature review, it was assumed  that reference test 1 has a sensitivity ranging from $20\%$ to $60\%$, reference test 2 has a sensitivity ranging from $20\%$ to $70\%$ and reference test 3's sensitivity is ranging from $70\%$ to $90\%$.  It is also assumed that the specificity of all 3 tests is between $90\%$ and $100\%$.  This information is expressed as : 
+ 
+\begin{verbatim}
+> S2.low = c(0.2, 0.2, 0.7) ; 	S2.up = c(0.6, 0.7, 0.9) ;
+> C2.low = rep(0.9,3) ;		C2.up = rep(1,3) ;
+\end{verbatim}
+
+
+\subsection{Running the Gibbs sampler}
+
+To run the Gibbs sampler, we make the following call to the $\textit{HSROC}$ function 
+
+\begin{verbatim}
+> HSROC(data=In.house,  iter.num=50000, init=init, sub_rs=REFSTD,
++    prior.SEref=c(S2.low, S2.up), prior.SPref=c(C2.low, C2.up))  
+\end{verbatim}
+
+
+\subsection{Interpreting the output files}
+
+This section is very similar to section \ref{HSROCSummary}.  We will only discuss the new features involved when using a model with multiple imperfect reference tests.  Previously, the \textit{HSROCSummary} function was called using \textit{data}, $\textit{burn\_in}$, \textit{Thin} and $\textit{print\_plot}$ arguments, leaving all other arguments at their respective default value.  Now in this section, in addition to these 4 arguments, we also need to define the $\textit{sub\_rs}$  argument in the same  way as in section \ref{data_prep2}.  
+
+\begin{verbatim}
+> HSROCSummary(data = In.house, burn_in=10000, Thin=2,  sub_rs=REFSTD, 
++    print_plot=TRUE )          
+\end{verbatim}    
+
+\subsubsection{Descriptive statistics} \label{descriptive_stats2}
+
+The summary output of this section is similar to the one seen in section \ref{descriptive_stats}.   Of course, the main difference being that we now have extra information on the reference tests.   
+
+
+
+\begin{wrapfigure}{r}{0.6\textwidth}
+  \begin{center}
+    \includegraphics[width=0.6\textwidth]{Section_2_2.png}
+  \end{center}
+  \caption{}
+  \label{section_2_2}
+\end{wrapfigure}
+
+ It also returns the prior ranges translated in terms of beta distribution parameters.  For example, we provided a prior range of $20\%$ up to $60\%$ for the sensitivity of the reference standard for studies 1 and 2.  This is transformed into a  $Beta(\alpha=9.2, \beta=13.8)$ prior distribution by equating the centre of the range to the mean of the Beta distribution ($\alpha/(\alpha + \beta)$) and $25\%$ of the range to the standard deviation ($\alpha \beta/((\alpha + \beta)^2 (\alpha + \beta + 1))$)
+
+
+\begin{wrapfigure}{r}{0.6\textwidth}
+  \begin{center}
+    \includegraphics[width=0.6\textwidth]{Section_3_2.png}
+  \end{center}
+  \caption{}
+  \label{section_3_2}
+\end{wrapfigure}
+
+
+
+The between-study parameters section of the summary output text file now includes the estimates of sensitivity and specificity for each reference standard (see figure \ref{section_3_2}).   For example, the sensitivity of the reference standard in studies 1 and 2 was estimated to be 0.579393 (0.421502, 0.735355).  The MC error (0.000782) is lower than $10\%$ of the standard deviation (0.080355).  Similarly, estimation of the specificity of the reference standard in studies 1 and 2 is 0.937374 with $95\%$ HPD interval given by (0.881911,  0.984617).  The MC error (0.000673) is also well below $10\%$ of the standard deviation (0.027641).
+
+
+
+\subsubsection{The graphical summary}
+
+Besides the plots presented in section \ref{graph}, 2 more files with plots are created when the model allows for imperfect reference standards.  The first contains trace plots for the sensitivity and specificity of the different reference standards while the other contains their density plots.  Figure \ref{refstd_plots} shows both trace and density plots for some of these parameters in the TB pleuritis example.    
+
+
+\begin{figure}[h]
+\begin{center}
+\begin{tabular}{cc}
+
+\includegraphics[width=0.5\linewidth]{Trace_plot_refstd.png}
+
+\includegraphics[width=0.5\linewidth]{Density_refstd.png}
+\\
+(a) & (b) \\
+
+\end{tabular}
+\end{center}
+\caption{}
+\label{refstd_plots}
+\end{figure}
+
+
+
+%\subsubsection{Multiple chains to assess convergence}
+%
+%The approach for multiple chains discussed in section \ref{n_chains} can be extended in the case of imperfect reference standards.   Just as we did previously, let's %say we want to run two more chains.  Again, let's supposed we had previously provided a directory in the $\textit{HSROC}$ function.   That is
+%\begin{verbatim}
+%> dir.create("C:/In_House/Chain1")
+%> HSROC(data=In.house, iter.num=50000,  init=init1,  sub_rs=REFSTD, 
+%+   prior.SEref=c(S2.low, S2.up), prior.SPref = c(C2.low, C2.up),
+%+   path="C:/In_House/Chain1"   )
+%\end{verbatim}
+%The remaining chains would be run by typing
+%\begin{verbatim}
+%> dir.create("C:/In_House/Chain2")
+%> HSROC(data=In.house, iter.num=50000,  init=init2, sub_rs=REFSTD, 
+%+   prior.SEref=c(S2.low, S2.up), prior.SPref = c(C2.low, C2.up),
+%+   path="C:/In_House/Chain2"   )
+%>
+%> dir.create("C:/In_House/Chain3")
+%> HSROC(data=In.house, iter.num=50000,  init=init3, sub_rs=REFSTD, 
+%+   prior.SEref=c(S2.low, S2.up), prior.SPref = c(C2.low, C2.up),
+%+   path="C:/In_House/Chain3"   )
+%\end{verbatim}
+%with \textit{init2} and \textit{init3} being defined just like in section \ref{data_prep} but with new initial values.  Recall that the working directories above are %assume to exist.  Summary of all 3 chains can therefore be obtained by typing 
+%\begin{verbatim}
+%> dir.create("C:/In_House/All_Chains")
+%> HSROCSummary(data = In.house, burn_in=10000, Thin=2, sub_rs=REFSTD, 
+%+    path="C:/In_House/All_Chains", chain=list("C:/In_House/Chain1",
+%+    "C:/In_House/Chain2", "C:/In_House/Chain3"), print_plot=TRUE  )
+%\end{verbatim}
+%  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\section{Simulating data sets}\label{simulation}
+
+\subsection{Simulation of data arising from a HSROC model assuming conditional independence between index and reference tests } \label{sim}
+
+
+The \textit{HSROC} package contains a function that allows simulation of a data set coming from a HSROC diagnostic meta-analysis model.  The arguments of the function are
+
+\begin{verbatim}
+> args(simdata)
+function (N, n, n.random = "FALSE", sub_rs, prev, se_ref = NULL, 
+    sp_ref = NULL, T, range.T=c(-Inf, Inf), L, range.L=c(-Inf, Inf),
+    sd_t, sd_a, b, path=getwd()) 
+\end{verbatim}
+
+
+The user must specify the values of the between-study parameters ($\Theta$, $\Lambda$, $\beta$, $\sigma_{\alpha}$ and $\sigma_{\theta}$), the number of studies desired and the number of individuals within each study.  In addition, the sensitivity and specificity of each reference test must be specified in case of non gold standard tests.     
+
+Let's suppose we want to generate a dataset of 6 studies with 20 individuals within each study and with the following parameters
+
+\begin{verbatim}
+> beta = 0.25
+> LAMBDA = 2.5
+> sd_alpha = 0.75 ;
+> THETA = -0.2
+> sd_theta = 0.50 ;
+> pi = c(0.15,0.25,0.10,0.12,0.22,0.18)
+\end{verbatim}
+
+
+The following call would generate the desired data under the assumption that a perfect reference test is used in each study.
+
+\begin{verbatim}
+> sim.data = simdata(N=6, n=20, prev=pi,  T=THETA, L=LAMBDA, 
++    sd_t=sd_theta, sd_a=sd_alpha, b=beta) 
+\end{verbatim}
+
+The resulting data looks like
+
+\begin{verbatim}
+$Data
+     ++ +- -+ --
+[1,]  3  6  0 11
+[2,]  6  1  0 13
+[3,]  2  0  1 17
+[4,]  2  0  2 16
+[5,]  4  5  0 11
+[6,]  2  0  1 17
+
+
+
+$`Within study parameters`
+        alpha      theta        ++        -- prev
+[1,] 1.475586 -0.2052966 0.7973728 0.7268779 0.15
+[2,] 2.657826 -0.5538340 0.9516953 0.8101039 0.25
+[3,] 2.906462  0.6132198 0.7707464 0.9903992 0.10
+[4,] 3.604026  0.1193441 0.9312215 0.9852665 0.12
+[5,] 3.119060 -0.9392145 0.9862777 0.7589440 0.22
+[6,] 3.269660  0.5130067 0.8389143 0.9925297 0.18
+
+$`Between study parameters`
+      THETA sigma theta      LAMBDA sigma alpha        beta   Overal ++  Overall -- 
+ -0.2000000   0.5000000   2.5000000   0.7500000   0.2500000   0.8996607   0.8829387 
+
+$`Reference standard`
+[1] "PERFECT"
+
+\end{verbatim}
+
+The \textit{n} argument can be modified e.g. $\text{ n = c(20,50,25,35,105,15)}$ so each study has a unique sample size provided by the user, resulting in the data below :
+
+
+%\begin{verbatim}
+%> sim.data = simdata(N=6, n=n_individuals, prev=pi,  T=THETA, L=LAMBDA, 
+%+     sd_t=sd_theta, sd_a=sd_alpha, b=beta) 
+%\end{verbatim}
+%
+%This would yield the following dataset
+%
+\begin{verbatim}
+$Data
+     ++ +- -+ --
+[1,]  1  1  0 18
+[2,]  7  0  3 40
+[3,]  3  5  0 17
+[4,]  4  2  1 28
+[5,] 26 23  0 56
+[6,]  3  2  0 10
+\end{verbatim}
+
+%$`Within study parameters`
+%        alpha       theta        ++        -- prev
+%[1,] 4.437212  0.04570184 0.9724179 0.9948530 0.15
+%[2,] 2.772356  0.23213055 0.8457663 0.9666570 0.25
+%[3,] 2.057946 -0.43107831 0.9012124 0.7509567 0.10
+%[4,] 2.297595  0.18815925 0.8017143 0.9351101 0.12
+%[5,] 3.011497 -1.06954926 0.9884776 0.6894452 0.22
+%[6,] 2.669810 -0.64659690 0.9598259 0.7822914 0.18
+%
+%$`Between study parameters`
+%      THETA sigma theta      LAMBDA sigma alpha        beta   Overal ++  Overall -- 
+% -0.2000000   0.5000000   2.5000000   0.7500000   0.2500000   0.8996607   0.8829387 
+%
+%$`Reference standard`
+%[1] PERFECT"
+%\end{verbatim}
+
+Alternatively, a unique sample size can be selected randomly within a range as follow
+
+\begin{verbatim}
+> n = seq(50,250,1)
+\end{verbatim}
+
+resulting in the data below :
+
+\begin{verbatim}
+$Data
+     ++ +- -+  --
+[1,] 11  1  0  42
+[2,] 41 95  6  74
+[3,] 22  8  1 206
+[4,] 25 56  0 146
+[5,] 12  7  0  46
+[6,] 11  0 10  89
+\end{verbatim}
+
+%$`Whithin study parameters`
+%        alpha       theta        ++        -- prev
+%[1,] 3.664036 -0.08437897 0.9546021 0.9761670 0.15
+%[2,] 1.293664 -0.86911814 0.9095227 0.4005657 0.25
+%[3,] 3.411204 -0.07788645 0.9422474 0.9674407 0.10
+%[4,] 2.370979 -0.69695037 0.9516681 0.7100693 0.12
+%[5,] 2.989379 -0.24614422 0.9377652 0.9214346 0.22
+%[6,] 1.661641  1.13521015 0.3941100 0.9870532 0.18
+%
+%$`Between study parameters`
+%      THETA sigma theta      LAMBDA sigma alpha        beta   Overal ++  Overall -- 
+% -0.2000000   0.5000000   2.5000000   0.7500000   0.2500000   0.8996607   0.8829387 
+%
+%$`Reference standard`
+%[1] "PERFECT"
+%
+%\end{verbatim}
+
+In each case described above, the function will also create 3 files in the directory specified by the \textit{path} argument summarizing the dataset.  Those files can be used within the \textit{HSROCSummary} function to compare the estimates of parameters to their true values.    Further help on this function can be obtained by typing
+
+\begin{verbatim}
+> help(simdata)
+\end{verbatim}
+
+
+
+%\subsection{Simulation of a HSROC model with imperfect reference standards and conditional independence}
+
+To simulate a dataset for an HSROC model with imperfect reference standards we must provide the values of each reference test's sensitivity and specificity.   Let's suppose we want to generate data for 6 studies with 2 different reference standards where the first reference test is to be applied over the first 4 studies while the other test will be applied over the remaining 2 studies.  
+
+\begin{verbatim}
+> REFSTD = list(2, 1:4, 5:6)
+> s2 = c(0.6, 0.75) 
+> c2 = c(0.95, 0.7) 
+\end{verbatim}
+
+In the example above, sensitivity and specificity of the first reference test are $60\%$ and $95\%$ respectively.  Sensitivity and specificity of the second reference test are $75\%$ and $70\%$ respectively.  To get a dataset of 6 studies with 200 individuals within each study assuming the same between-study parameters as in section \ref{sim}, we run
+
+
+\begin{verbatim}
+> simdata(N=6, n=200, sub_rs=REFSTD, se_ref=s2, sp_ref=c2, prev=pi,  
++     T=THETA, L=LAMBDA, sd_t=sd_theta, sd_a=sd_alpha, b=beta) 
+ \end{verbatim}
+
+resulting in 
+
+\begin{verbatim}
+$Data
+     ++  +- -+  --
+[1,] 14  14  7 165
+[2,] 27  62 13  98
+[3,] 15 101 10  74
+[4,] 12  75  8 105
+[5,] 44  31 40  85
+[6,] 25  17 47 111
+
+$`Within study parameters`
+        alpha      theta        ++        -- prev
+[1,] 2.586503  0.2755630 0.8154357 0.9622734 0.15
+[2,] 1.288232 -0.1718890 0.7642751 0.7037109 0.25
+[3,] 1.688717 -0.9207889 0.9403522 0.4654919 0.10
+[4,] 2.990638 -1.1974804 0.9912584 0.6321283 0.12
+[5,] 2.973003 -0.7219818 0.9743511 0.8068411 0.22
+[6,] 2.176751  0.2464142 0.7712676 0.9347985 0.18
+
+$`Between study parameters`
+      THETA sigma theta      LAMBDA sigma alpha        beta   Overal ++  Overall -- 
+ -0.2000000   0.5000000   2.5000000   0.7500000   0.2500000   0.8996607   0.8829387 
+
+$`Reference standard`
+      1    2
+s2 0.60 0.75
+c2 0.95 0.70
+\end{verbatim}
+
+
+
+%\begin{verbatim}
+%> n_individuals = c(200,500,250,350,1050,150)
+%\end{verbatim}
+%
+%We would replace the \textit{n} argument  as follow
+%
+%\begin{verbatim}
+%> simdata(N=6, n=n_individuals, sub_rs=REFSTD, se_ref=s2, sp_ref=c2, prev=pi,  
+%+     T=THETA, L=LAMBDA, sd_t=sd_theta, sd_a=sd_alpha, b=beta) 
+%\end{verbatim}
+%
+%This would yield the following dataset
+%
+%\begin{verbatim}
+%$Data
+%      ++  +-  -+  --
+%[1,]  17  23  15 145
+%[2,]  64 104  23 309
+%[3,]  16  16   5 213
+%[4,]  36 154   5 155
+%[5,] 159 161 263 467
+%[6,]  16   5  33  96
+%
+%$`Within study parameters`
+%        alpha       theta        ++        -- prev
+%[1,] 2.378906 -0.03984856 0.8610070 0.9036567 0.15
+%[2,] 2.466358 -0.26615166 0.9071080 0.8634137 0.25
+%[3,] 3.430973  0.15641165 0.9155704 0.9830449 0.10
+%[4,] 2.365900 -1.13450897 0.9795800 0.5218873 0.12
+%[5,] 1.448760  0.02142553 0.7324881 0.8009749 0.22
+%[6,] 3.419903  0.69614916 0.8145202 0.9967992 0.18
+%
+%$`Between study parameters`
+%      THETA sigma theta      LAMBDA sigma alpha        beta   Overal ++  Overall -- 
+% -0.2000000   0.5000000   2.5000000   0.7500000   0.2500000   0.8996607   0.8829387 
+%
+%$`Reference standard`
+%      1    2
+%s2 0.60 0.75
+%c2 0.95 0.70
+%\end{verbatim}
+%
+%Now let's suppose we would like the number of individuals to range between 250 to 500 within each study.  We would call the function in the following way     
+%
+%\begin{verbatim}
+%> simdata(N=6, n=seq(250,500,1), n.random=TRUE, sub_rs=REFSTD, 
+%+     se_ref=s2, sp_ref=c2, prev=pi,  T=THETA, L=LAMBDA, 
+%+     sd_t=sd_theta, sd_a=sd_alpha, b=beta) 
+%\end{verbatim}
+%
+%This would yield the following dataset
+%
+%\begin{verbatim}
+%$Data
+%     ++  +- -+  --
+%[1,] 35 109 28 276
+%[2,] 39  23 27 251
+%[3,] 28  66 12 348
+%[4,] 23  81 10 326
+%[5,] 93  99 86 177
+%[6,] 56  64 64 131
+%
+%$`Whithin study parameters`
+%         alpha       theta        ++        -- prev
+%[1,] 1.1293721  0.04965825 0.6752693 0.7568305 0.15
+%[2,] 2.7152113  0.67093804 0.7277367 0.9892373 0.25
+%[3,] 2.4608113 -0.26853614 0.9070510 0.8621304 0.10
+%[4,] 2.3011306 -0.16318393 0.8768493 0.8683979 0.12
+%[5,] 0.8318416 -0.12889138 0.6846689 0.6275029 0.22
+%[6,] 1.9608712 -0.42037660 0.8918102 0.7371651 0.18
+%
+%$`Between study parameters`
+%      THETA sigma theta      LAMBDA sigma alpha        beta   Overal ++  Overall -- 
+% -0.2000000   0.5000000   2.5000000   0.7500000   0.2500000   0.8996607   0.8829387 
+%
+%$`Reference standard`
+%      1    2
+%s2 0.60 0.75
+%c2 0.95 0.70
+%\end{verbatim}
+
+
+
+%\section{Example 3 :  Meta-Analysis in the absence of gold standard reference test assuming conditional %dependence}
+%
+%
+%\subsection{Data preparation}
+%
+%
+%
+%
+%\subsection{Running the Gibbs sampler}
+%
+%
+%\subsection{Interpreting the output files}
+%
+%
+%\subsubsection{Descriptive statistics}
+%
+%
+%
+%\subsubsection{The graphical summary}
+%
+%
+%\subsubsection{Multiple chains to assess convergence}
+%
+%\subsubsection{Simulation}
+%
+%
+
+\newpage
+\section{Appendix : Likelihood function and prior distributions for the case when the same imperfect reference standard is used in all studies}
+
+The likelihood function of the observed data across the $J$ studies
+can be expressed in terms of the sensitivity and specificity of
+each test, and the prevalence in the $j^{th}$ study,
+($P(D=1|\mbox{Study}=j)=\pi_{j}$), as follows: 
+\begin{eqnarray*}
+&& L(\Theta,\Lambda,S_{2},C_{2},\sigma^{2}_{\alpha},\sigma^{2}_{\theta},\beta,\pi_{j},\alpha_{j},\theta_{j},j=1,\ldots,J|t_{1j},t_{2j},j=1,\ldots,J)   \nonumber \\
+& &= \prod_{j=1}^{J}(\pi_{j} \Phi(-\frac{\theta_{j}-\frac{\alpha_{j}}{2}}{exp(\frac{\beta}{2})})S_{2}+ (1-\pi_{j})\Phi(-\frac{\theta_{j}+\frac{\alpha_{j}}{2}}{exp(\frac{-\beta}{2})})(1-C_{2}))^{\sum t_{1j}t_{2j}} \nonumber \\
+& & \times (\pi_{j} \Phi(-\frac{\theta_{j}-\frac{\alpha_{j}}{2}}{exp(\frac{\beta}{2})})(1-S_{2})+ (1-\pi_{j})\Phi(-\frac{\theta_{j}+\frac{\alpha_{j}}{2}}{exp(\frac{-\beta}{2})})C_{2})^{\sum t_{1j}(1-t_{2j})} \nonumber \\
+& &  \times (\pi_{j} \Phi(\frac{\theta_{j}-\frac{\alpha_{j}}{2}}{exp(\frac{\beta}{2})})S_{2}+ (1-\pi_{j})\Phi(\frac{\theta_{j}+\frac{\alpha_{j}}{2}}{exp(\frac{-\beta}{2})})(1-C_{2}))^{\sum (1-t_{1j})t_{2j}} \nonumber \\
+& & \times (\pi_{j} \Phi(\frac{\theta_{j}-\frac{\alpha_{j}}{2}}{exp(\frac{\beta}{2})})(1-S_{2})+ (1-\pi_{j})\Phi(\frac{\theta_{j}+\frac{\alpha_{j}}{2}}{exp(\frac{-\beta}{2})})C_{2})^{\sum (1-t_{1j})(1-t_{2j})},
+\label{Likelihood}
+\end{eqnarray*}
+where all sums are from 1 to $J$.
+
+
+The pooled `difference in means' parameter was 
+assumed to have prior density $\Lambda \sim U(-3,3)$.
+The log of the ratio between the two standard deviations, $\beta$ was
+assumed to follow a U(-0.75, 0.75) distribution. The pooled `cut-off' parameter, $\Theta$
+was assumed to follow a U(-1.5, 1.5) distribution. Parameters $\sigma_{\alpha}$ and $\sigma_{\theta}$ were assumed to follow U(0,2) distributions. For the $\pi_{j}$, $S_{2}$ and $C_{2}$  parameters, we assumed a Beta distribution. 
+
+
+\bibliographystyle{plain}
+\bibliography{ref}
+
+
+\end{document}
