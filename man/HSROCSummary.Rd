@@ -11,9 +11,9 @@
 HSROCSummary(data, burn_in = 0, iter.keep = NULL, Thin = 1, sub_rs=NULL, 
   point_estimate = c("median", "mean"), summary.path = getwd(), 
   chain = getwd(), tv = NULL, digit = 6, print_plot = FALSE, 
-  plot.ind.studies = TRUE, conf_region = TRUE, predict_region = TRUE, 
+  plot.ind.studies = TRUE, cred_region = TRUE, predict_region = TRUE, 
   col.pooled.estimate = "red", col.predict.region = "blue", 
-  lty.conf.region = "dotdash", lty.predict.region = "dotted", 
+  lty.cred.region = "dotdash", lty.predict.region = "dotted", 
   region_level = 0.95, trunc_low = 0.025, trunc_up = 0.025 ) 
 
 }
@@ -32,13 +32,13 @@ HSROCSummary(data, burn_in = 0, iter.keep = NULL, Thin = 1, sub_rs=NULL,
   \item{digit}{integer indicating the number of decimal places to be used.  The default value is 6.  }
   \item{print_plot}{logical.  If TRUE, pdf files of trace, density and summary receiver operating characteristic (SROC) curve plots are saved in the \code{summary.path} working directory to help assess convergence of the Gibbs sampler.  }
   \item{plot.ind.studies}{logical.  If TRUE (default), empty circles representing individual studies are drawn on the SROC plot.  The radius of the circles are proportional to the sample size of the studies.   }
-  \item{conf_region}{logical.  If TRUE (default), a confidence region curve is drawn on the SROC plot.  }
+  \item{cred_region}{logical.  If TRUE (default), a credible region curve is drawn on the SROC plot.  }
   \item{predict_region}{logical.  If TRUE (default), a prediction region curve is drawn on the SROC plot.  }
-  \item{col.pooled.estimate}{A specification for the default SROC plotting color of the pooled estimate point and confidence region curve. Defaults to "red".}
+  \item{col.pooled.estimate}{A specification for the default SROC plotting color of the pooled estimate point and credible region curve. Defaults to "red".}
   \item{col.predict.region}{A specification for the default SROC plotting color of the prediction region curve. Defaults to "blue".}
-  \item{lty.conf.region}{The confidence region line type. Default to "dotdash"}
+  \item{lty.cred.region}{The credible region line type. Default to "dotdash"}
   \item{lty.predict.region}{The prediction region line type. Default to "dotted"}
-  \item{region_level}{The confidence (prediction) level required for the confidence (prediction) region.}
+  \item{region_level}{The credible (prediction) level required for the credible (prediction) region.}
   \item{trunc_low}{Lower limit truncation entering the creation of the SROC curve.  Default to 0.025.  See details for further explanations.}
   \item{trunc_up}{Upper limit truncation entering the creation of the SROC curve.  Default to 0.025.  See details for further explanations.}
 }

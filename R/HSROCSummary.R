@@ -2,9 +2,9 @@ HSROCSummary <-
 function (data, burn_in = 0, iter.keep = NULL, Thin = 1, sub_rs = NULL, 
     point_estimate = c("median", "mean"), summary.path = getwd(), 
     chain = getwd(), tv = NULL, digit = 6, print_plot = FALSE, 
-    plot.ind.studies = TRUE, conf_region = TRUE, predict_region = TRUE, 
+    plot.ind.studies = TRUE, cred_region = TRUE, predict_region = TRUE, 
     col.pooled.estimate = "red", col.predict.region = "blue", 
-    lty.conf.region = "dotdash", lty.predict.region = "dotted", 
+    lty.cred.region = "dotdash", lty.predict.region = "dotted", 
     region_level = 0.95, trunc_low = 0.025, trunc_up = 0.025) 
 {
     setwd(summary.path)
@@ -2814,7 +2814,7 @@ function (data, burn_in = 0, iter.keep = NULL, Thin = 1, sub_rs = NULL,
                 2])/2)/exp(median(Parameter[, 3])/2))
             C_sroc = pnorm((TH_range + median(Parameter[, 2])/2)/exp(-median(Parameter[, 
                 3])/2))
-            if (conf_region == TRUE) {
+            if (cred_region == TRUE) {
                 min_t = 0
                 max_t = 2 * pi
                 dTt = 5e-05
@@ -2834,12 +2834,12 @@ function (data, burn_in = 0, iter.keep = NULL, Thin = 1, sub_rs = NULL,
                   1] + Parameter[, 2]/2), exp(Parameter[, 3]/2) * 
                   (Parameter[, 1] + Parameter[, 2]/2))
                 cos_fun_B = cos(range_t + acos(r))
-                probit_S_confidence = hat_mu_A + s_A * bound_cte * 
+                probit_S_credible = hat_mu_A + s_A * bound_cte * 
                   cos_fun_A
-                probit_C_confidence = hat_mu_B + s_B * bound_cte * 
+                probit_C_credible = hat_mu_B + s_B * bound_cte * 
                   cos_fun_B
-                S_confidence = pnorm(probit_S_confidence)
-                C_confidence = pnorm(probit_C_confidence)
+                S_credible = pnorm(probit_S_credible)
+                C_credible = pnorm(probit_C_credible)
             }
             if (predict_region == TRUE) {
                 min_t = 0
@@ -2902,8 +2902,8 @@ function (data, burn_in = 0, iter.keep = NULL, Thin = 1, sub_rs = NULL,
                     fg = 1)
                 }
             }
-            if (conf_region == TRUE) {
-                lines(C_confidence, S_confidence, lwd = 3, lty = lty.conf.region, 
+            if (cred_region == TRUE) {
+                lines(C_credible, S_credible, lwd = 3, lty = lty.cred.region, 
                   col = col.pooled.estimate)
             }
             if (predict_region == TRUE) {
@@ -4505,7 +4505,7 @@ function (data, burn_in = 0, iter.keep = NULL, Thin = 1, sub_rs = NULL,
                   2])/2)/exp(median(Parameter[, 3])/2))
                 C_sroc = pnorm((TH_range + median(Parameter[, 
                   2])/2)/exp(-median(Parameter[, 3])/2))
-                if (conf_region == TRUE) {
+                if (cred_region == TRUE) {
                   min_t = 0
                   max_t = 2 * pi
                   dTt = 5e-05
@@ -4528,12 +4528,12 @@ function (data, burn_in = 0, iter.keep = NULL, Thin = 1, sub_rs = NULL,
                     1] + Parameter[, 2]/2), exp(Parameter[, 3]/2) * 
                     (Parameter[, 1] + Parameter[, 2]/2))
                   cos_fun_B = cos(range_t + acos(r))
-                  probit_S_confidence = hat_mu_A + s_A * bound_cte * 
+                  probit_S_credible = hat_mu_A + s_A * bound_cte * 
                     cos_fun_A
-                  probit_C_confidence = hat_mu_B + s_B * bound_cte * 
+                  probit_C_credible = hat_mu_B + s_B * bound_cte * 
                     cos_fun_B
-                  S_confidence = pnorm(probit_S_confidence)
-                  C_confidence = pnorm(probit_C_confidence)
+                  S_credible = pnorm(probit_S_credible)
+                  C_credible = pnorm(probit_C_credible)
                 }
                 if (predict_region == TRUE) {
                   min_t = 0
@@ -4599,9 +4599,9 @@ function (data, burn_in = 0, iter.keep = NULL, Thin = 1, sub_rs = NULL,
                       fg = 1)
                   }
                 }
-                if (conf_region == TRUE) {
-                  lines(C_confidence, S_confidence, lwd = 3, 
-                    lty = lty.conf.region, col = col.pooled.estimate)
+                if (cred_region == TRUE) {
+                  lines(C_credible, S_credible, lwd = 3, lty = lty.cred.region, 
+                    col = col.pooled.estimate)
                 }
                 if (predict_region == TRUE) {
                   lines(C_prediction, S_prediction, lwd = 3, 

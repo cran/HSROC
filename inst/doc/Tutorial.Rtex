@@ -49,7 +49,7 @@
 
 \newpage
 \section{Introduction}
-This document is intended to serve as a guide for the usage of the HSROC package to be used within the free statistical software environment, R \cite{R_soft}.  Therefore, the main goal is to describe the functions in the package via different examples without emphasing the statistical  theory behind them.  The likelihood of the HSROC model and prior distributions appear in the appendix.  A more detailed article is currently under review.  
+This document is intended to serve as a guide for the usage of the HSROC package to be used within the free statistical software environment, R \cite{R_soft}.  Therefore, the main goal is to describe the functions in the package via different examples without emphasing the statistical  theory behind them.  The likelihood of the HSROC model and prior distributions appear in the appendix.  The interested reader can learn more about the statistical theory in \cite{Dendukuri2012a}.
 
 The HSROC package consists of 4 functions and 2 data sets.  The two main functions are \textit{HSROC} and \textit{HSROCSummary}.   \textit{HSROC}, which must be run first, is used to implement a Gibbs sampler while \textit{HSROCSummary} produces summaries for the HSROC model parameters.  The remaining 2 functions are secondary functions :  \textit{simdata} simulates a dataset based on the HSROC diagnostic meta-analysis model, while \textit{beta.parameter} returns the shape parameters of the \textit{Beta($\alpha$, $\beta$)} probability corresponding to a given range. 
 
@@ -179,8 +179,12 @@ The \textit{HSROCSummary} function can be used to obtain descriptive statistics 
 \begin{verbatim}
 > args(HSROCSummary)
 function (data, burn_in = 0, iter.keep = NULL, Thin = 1, sub_rs = NULL, 
-    point_estimate = c("median", "mean"), path = getwd(), chain = NULL, 
-    tv = NULL, digit = 6, print_plot = FALSE)
+    point_estimate = c("median", "mean"), summary.path = getwd(), 
+    chain = getwd(), tv = NULL, digit = 6, print_plot = FALSE, 
+    plot.ind.studies = TRUE, conf_region = TRUE, predict_region = TRUE, 
+    col.pooled.estimate = "red", col.predict.region = "blue", 
+    lty.conf.region = "dotdash", lty.predict.region = "dotted", 
+    region_level = 0.95, trunc_low = 0.025, trunc_up = 0.025) 
 \end{verbatim}
 
 For our example, we call the function as follows : 
@@ -402,7 +406,7 @@ For example, the cut-off parameter $\Theta$ was estimated to be $0.900203$ with 
 
 
 Figure \ref{section_4} displays a portion of the within-study parameter estimates.  We see that estimates for individual studies are grouped by parameters.
- \newpage .
+
 
 \begin{wrapfigure}{r}{0.6\textwidth}
  \begin{center}
@@ -544,7 +548,8 @@ Another graphical summary produced by the \textit{HSROCSummary} function is the 
 
 %\newpage
 
-Finally, the function also produce a summary receiver operating characteristic (SROC) curve. The SROC curve summarizes the relationship between sensitivity and (1 - specificity) across studies, taking into account the between-study heterogeneity.  The SROC curve for the MRI data is shown in Figure \ref{sroc_1}. Individual studies are depicted by a clear circle. The radius of the circle is proportional to the sample size of the study. The black circle marks the pooled sensitivity and specificity across the 10 studies in this meta-analysis.
+Finally, the function also produce a summary receiver operating characteristic (SROC) curve. Finally, the function also produce a summary receiver operating characteristic (SROC) curve. The SROC curve summarizes the relationship between sensitivity and (1 - specificity) across studies, taking into account the between-study heterogeneity.  The SROC curve for the MRI data is shown in Figure \ref{sroc_1}. Individual studies are depicted by a clear circle. The radius of the circle is proportional to the sample size of the study. The red circle marks the pooled sensitivity and specificity across the 10 studies in this meta-analysis.  The $95\%$ prediction region is defined by the blue dotted-curve.  The red dot-dashed-curve marks the boundary of the $95\%$ credible region for the pooled estimates of sensitivity and specificity across the 10 studies.
+
 
 \begin{figure}[h]
   \begin{center}

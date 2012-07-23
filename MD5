@@ -1,8 +1,8 @@
-b125e839359f8a8ba9514aa4be8eb5c3 *DESCRIPTION
+6ef8ab9503b5cbfecc739a966fd280ac *DESCRIPTION
 eb723b61539feef013de476e68b5c50a *GPL-2
 1b0ac017d3181214b951c36c63bad876 *HSROC.R
 a16b4fad16ce8a417317973a1bde2ab2 *NAMESPACE
-2069541d921bd250f3c55baa3bb25099 *NEWS
+41e0fd1de2eb703cdd45271fddb4061d *NEWS
 972d5b5a27d32eeed0dfb24148d36828 *R/A.eij.fonction.R
 cbf7d78cf76e13d205ff8d74c5ca76af *R/A.fonction.R
 f1c5effecc6309221ca7c550ed333b1a *R/B.a1.fonction.R
@@ -11,9 +11,9 @@ f1c5effecc6309221ca7c550ed333b1a *R/B.a1.fonction.R
 8aa43b8bc6ca1f0f1df037241b56afb4 *R/B.fonction.Ind.R
 c4310b16980aea6a2c4e0cc4add3753a *R/B.fonction.R
 25b09db4cb3743df6156ed3af506011e *R/DATA.organizer.R
-d02c060e653720dca063c71df2b0acc8 *R/HSROC-internal.R
+534365e0c33b05f4bd390568d3ff0ca1 *R/HSROC-internal.R
 e9041d28ce82a93092126ba087fc6205 *R/HSROC.R
-d1918f4b36e78c11327cc57084098eac *R/HSROCSummary.R
+87cf7db54e3e1c68dad3b6070a580c52 *R/HSROCSummary.R
 cb1ff330847d712de65e71e1e517af0a *R/Initialization.R
 0e43fcb6e99571f9db3581226d51e236 *R/M_H2_IND.R
 91571cfcb5479ad672ceee482f4f0fad *R/M_H2_IND2.R
@@ -55,8 +55,8 @@ f53972c69412166d35b0c8704c9c961d *data/In.house.rda
 63161a0a16a64cefc52314184570dcb4 *inst/LICENCE
 286fb14f924bd8e07eaab7a4e2e7401b *inst/doc/Density_2.PNG
 8b1a53853a53dd93ae6ef65431fe0fd7 *inst/doc/Density_refstd.PNG
-e523447df20d5ed1367199d1702d6e09 *inst/doc/Ref.bib
-176bb4e4bfc2ccf3470d1bb37c58d1d2 *inst/doc/SROC_1.png
+0759f79aa9ffd46a1c854d37ebd97886 *inst/doc/Ref.bib
+0ab5fcbcd8e1834652df872c078dfedb *inst/doc/SROC_1.png
 bca29d6c56240bb6aaa6161577c688cc *inst/doc/Section_1.PNG
 d17b3423115d5cfc972ae011337a990a *inst/doc/Section_2.PNG
 1ff0c75101cdbe9cc8273a5e59999b52 *inst/doc/Section_2_2.PNG
@@ -66,10 +66,10 @@ d17b3423115d5cfc972ae011337a990a *inst/doc/Section_2.PNG
 d22de2502fe4056384d10def000100fc *inst/doc/Trace_plot.PNG
 2798ea30800223348b2c042dc364368d *inst/doc/Trace_plot_1_chain_2.PNG
 4ee8ec29332eae6dee065a2e0120f62a *inst/doc/Trace_plot_refstd.PNG
-6b48099b097c9aac6ec83230a5fde382 *inst/doc/Tutorial.Rtex
-d02da0c5f182bc4bda9247a6e1148b28 *inst/doc/Tutorial.pdf
+019b2dc6c0a3dfd6f29b1a8d3b132600 *inst/doc/Tutorial.Rtex
+c859ab26449edd30ac25328fd612c481 *inst/doc/Tutorial.pdf
 21714d06b8b4c5f6c99fb15a11ea1f8f *man/HSROC.Rd
-476135d76d74122dec7afc1d5d064c04 *man/HSROCSummary.Rd
+973655bc9178355421580465c53e14b9 *man/HSROCSummary.Rd
 f3768b1fa33e12c8703d4e6ac4672e6b *man/In.house.Rd
 aac2d19fcac6b938cd4bbdd6ba363186 *man/MRI.Rd
 0bbabf9fa9027770af5768efb62f3d2c *man/beta.parameter.Rd

@@ -1,5 +1,14 @@
 		#===================================================
 		#
+		#		2012-07-23 (Version 2.1.4 submitted to cran)
+		#
+		#===================================================
+--- Updates brought to the vignette.
+--- Renamed "Confidence region" as "Credible region".
+
+
+		#===================================================
+		#
 		#		2012-07-11 (Version 2.1.3 submitted to cran)
 		#
 		#===================================================
@@ -25,7 +34,7 @@
 		#		2012-07-03 (Version 2.1.0 submitted to cran)
 		#
 		#===================================================
---- Added missing arguments in various examples provided in the help files that prevented the package to run correctly.
+--- Added missing arguments in various examples provided in the help files that prevented these examples to run correctly.
 --- Fixed some portability issues.
 
 		#===================================================
@@ -41,7 +50,7 @@
 		#		2012-05-10 (Version 2.0.9 not published)
 		#
 		#===================================================
---- Added the 'region_level' argument to 'HSROCSummary' function to allow user to select the level of confidence/prediction for the confidence/prediction region.
+--- Added the 'region_level' argument to 'HSROCSummary' function to allow user to select the level of credible/prediction for the credible/prediction region.
 --- Following has been added to the 'HSROCSummary' function.  If a Gold Standard is assumed, the individual study estimates are ploted along with the SROC curve if argument 'plot.ind.studies' is set to TRUE.  If an imperfect reference standard is assumed, the estimates from the model are ploted along with the SROC curve if argument 'plot.ind.studies' is set to TRUE. 
 --- Updated references that appear in the help files for 'HSROC' and 'HSROCSummary' functions.
 
@@ -50,7 +59,7 @@
 		#		2012-05-04 (Version 2.0.8 not published)
 		#
 		#===================================================
---- Options to draw confidence and prediction regions have been added to the Summary function 'HSROCSummary'  
+--- Options to draw credible and prediction regions have been added to the Summary function 'HSROCSummary'  
 
 
 		#===================================================
@@ -58,7 +67,7 @@
 		#		2012-04-18 (Version 2.0.7 not published)
 		#
 		#===================================================
---- If existing results are detected in the working directory, HSROC function now ask if user wants to overwrite them  
+--- If existing results are detected in the working directory, HSROC function now asks if user wants to overwrite them  
 
 
 		#===================================================
@@ -75,7 +84,7 @@
 		#		2012-03-21 (Version 2.0.5 submitted to Cran)
 		#
 		#===================================================
---- HSROC function display a warning if there are chances that the maximum memory allocation be attained.  
+--- HSROC function displays a warning if there are chances that the maximum memory allocation be attained.  
 
 
 
@@ -114,7 +123,7 @@
 		#===================================================
 
 --- Implemented the Gibbs sampler in C++
---- Remove a feature where the same cutoff could be used for all studies (however, most of the code is still there and should be removed)
+--- Remove a feature where the same cutoff could be used for all studies
 
 		#===================================================
 		#
