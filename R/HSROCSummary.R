@@ -2873,7 +2873,7 @@ function (data, burn_in = 0, iter.keep = NULL, Thin = 1, sub_rs = NULL,
                   hat_sigma_A^2)) * bound_cte * cos_fun_A
                 probit_C_prediction = hat_mu_B + (sqrt(s_B^2 + 
                   hat_sigma_B^2)) * bound_cte * cos(range_t + 
-                  acos(r + hat_sigma_AB))
+                  acos(r))
                 S_prediction = pnorm(probit_S_prediction)
                 C_prediction = pnorm(probit_C_prediction)
             }
@@ -4570,7 +4570,7 @@ function (data, burn_in = 0, iter.keep = NULL, Thin = 1, sub_rs = NULL,
                     hat_sigma_A^2)) * bound_cte * cos_fun_A
                   probit_C_prediction = hat_mu_B + (sqrt(s_B^2 + 
                     hat_sigma_B^2)) * bound_cte * cos(range_t + 
-                    acos(r + hat_sigma_AB))
+                    acos(r))
                   S_prediction = pnorm(probit_S_prediction)
                   C_prediction = pnorm(probit_C_prediction)
                 }

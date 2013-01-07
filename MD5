@@ -1,8 +1,8 @@
-6ef8ab9503b5cbfecc739a966fd280ac *DESCRIPTION
+0f48e4eab4d79cca7749301ab11d4c4a *DESCRIPTION
 eb723b61539feef013de476e68b5c50a *GPL-2
 1b0ac017d3181214b951c36c63bad876 *HSROC.R
 a16b4fad16ce8a417317973a1bde2ab2 *NAMESPACE
-41e0fd1de2eb703cdd45271fddb4061d *NEWS
+c10bb642bc6a7d9be75fe37635ff58bf *NEWS
 972d5b5a27d32eeed0dfb24148d36828 *R/A.eij.fonction.R
 cbf7d78cf76e13d205ff8d74c5ca76af *R/A.fonction.R
 f1c5effecc6309221ca7c550ed333b1a *R/B.a1.fonction.R
@@ -11,9 +11,9 @@ f1c5effecc6309221ca7c550ed333b1a *R/B.a1.fonction.R
 8aa43b8bc6ca1f0f1df037241b56afb4 *R/B.fonction.Ind.R
 c4310b16980aea6a2c4e0cc4add3753a *R/B.fonction.R
 25b09db4cb3743df6156ed3af506011e *R/DATA.organizer.R
-534365e0c33b05f4bd390568d3ff0ca1 *R/HSROC-internal.R
+ca626d4c41cf2927f61ba5cd3b9ed983 *R/HSROC-internal.R
 e9041d28ce82a93092126ba087fc6205 *R/HSROC.R
-87cf7db54e3e1c68dad3b6070a580c52 *R/HSROCSummary.R
+ad8ea0565976d21f21e9408076d7238c *R/HSROCSummary.R
 cb1ff330847d712de65e71e1e517af0a *R/Initialization.R
 0e43fcb6e99571f9db3581226d51e236 *R/M_H2_IND.R
 91571cfcb5479ad672ceee482f4f0fad *R/M_H2_IND2.R
@@ -49,8 +49,8 @@ c37d437812aa6943f6998bc21f0a684a *R/truncgamma3.R
 5c61c6739fc4cfd1b911de9ec06ab491 *R/truncnorm.R
 9a2536259e078d7cc17147d774e99290 *R/truncnorm2.R
 e1ecdd32e094680de041785f0772ddf4 *R/truncunif.R
-f53972c69412166d35b0c8704c9c961d *data/In.house.rda
-9168beb78a0098b133657e20b52e2240 *data/MRI.rda
+c7401d2be756efc6ae0013aeb6545be3 *data/In.house.rda
+6b05ab77d848b8b5747f8520d32a3856 *data/MRI.rda
 0dc0c0ed9c984f553a95018e14b735c1 *inst/CITATION
 63161a0a16a64cefc52314184570dcb4 *inst/LICENCE
 286fb14f924bd8e07eaab7a4e2e7401b *inst/doc/Density_2.PNG
@@ -67,7 +67,7 @@ d22de2502fe4056384d10def000100fc *inst/doc/Trace_plot.PNG
 2798ea30800223348b2c042dc364368d *inst/doc/Trace_plot_1_chain_2.PNG
 4ee8ec29332eae6dee065a2e0120f62a *inst/doc/Trace_plot_refstd.PNG
 019b2dc6c0a3dfd6f29b1a8d3b132600 *inst/doc/Tutorial.Rtex
-c859ab26449edd30ac25328fd612c481 *inst/doc/Tutorial.pdf
+9d58d8cb725ebb064b8c085ff0ea1473 *inst/doc/Tutorial.pdf
 21714d06b8b4c5f6c99fb15a11ea1f8f *man/HSROC.Rd
 973655bc9178355421580465c53e14b9 *man/HSROCSummary.Rd
 f3768b1fa33e12c8703d4e6ac4672e6b *man/In.house.Rd

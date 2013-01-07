@@ -1,11 +1,24 @@
 		#===================================================
 		#
+		#		2013-01-07 (Version 2.1.6 submitted to cran)
+		#
+		#===================================================
+--- Fixed a bug that would prevent the prediction region to be plot.
+
+		#===================================================
+		#
+		#		2012-12-06 (Version 2.1.5 not published)
+		#
+		#===================================================
+--- Package re-built under latest R release (R-2.15.2)
+
+		#===================================================
+		#
 		#		2012-07-23 (Version 2.1.4 submitted to cran)
 		#
 		#===================================================
 --- Updates brought to the vignette.
 --- Renamed "Confidence region" as "Credible region".
-
 
 		#===================================================
 		#
