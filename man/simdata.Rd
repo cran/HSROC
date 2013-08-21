@@ -63,7 +63,8 @@ The \code{range.T} argument ensures the individual \eqn{\theta_i}{theta_i} will 
 The \code{range.L} argument ensures the individual \eqn{\alpha_i}{alpha_i} will be generated within the range provided.  If no range is provided by the user (default) the function assumes no restrictions are made on the possible values of \eqn{\theta_i}{theta_i}.
 
 
-For more help on this function, see the tutorial pdf file available on http://www.nandinidendukuri.com/filesonjoomlasite/HSROC_R_Tutorial.pdf
+For more help on this function, see the tutorial pdf file available on 
+http://www.nandinidendukuri.com/filesonjoomlasite/HSROC_R_Tutorial.pdf
 
 
 }

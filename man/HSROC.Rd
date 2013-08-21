@@ -65,7 +65,8 @@ each of these additional elements must be a vector (possibly of length one) taki
 
 The \code{path} argument points to the working directory where files written at each iteration of the Gibbs sampler will be saved.  If no path is provided, the current working directory will be used
 
-For more help on this function, see the tutorial pdf file available at http://www.nandinidendukuri.com/filesonjoomlasite/HSROC_R_Tutorial.pdf
+For more help on this function, see the tutorial pdf file available at 
+http://www.nandinidendukuri.com/filesonjoomlasite/HSROC_R_Tutorial.pdf
 
 }
 
