@@ -10,7 +10,7 @@ function (...)
         " Ian Schiller and Nandini Dendukuri ", sep = "")
     packageStartupMessage("##\n## Development of HSROC package was supported by grants from the ")
     packageStartupMessage("## Canadian Institutes of Health Research (MOP #89857) ")
-    packageStartupMessage("## and the Fonds de la Recherche en Santé Québec. ")
+    packageStartupMessage("## and the Fonds de la Recherche en Sant<U+00E9> Qu<U+00E9>bec. ")
 }
 .Random.seed <-
 c(403L, 230L, 1372049589L, 925173903L, -1998544302L, -1318532289L, 

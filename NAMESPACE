@@ -1,7 +1,7 @@
 useDynLib(HSROC)
 export(simdata, HSROC, HSROCSummary, beta.parameter)
 
-importFrom(coda, mcmc, HPDinterval)
+importFrom(coda, mcmc, HPDinterval, as.mcmc)
 importFrom(MCMCpack, rinvgamma, dinvgamma)
 
 import(MASS, lattice)

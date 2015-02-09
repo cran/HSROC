@@ -1,7 +1,7 @@
-81754287ca28050754dfbca7b9184d9c *DESCRIPTION
+fead12ad028dac146429789883bdff1d *DESCRIPTION
 eb723b61539feef013de476e68b5c50a *GPL-2
-7dd1a04489d754595eaa8b49d8a2e010 *NAMESPACE
-cb67e1bbe30e0bfe08b0f0aa94983d18 *NEWS
+ed2ef4c976691252894df49bd9c3bb48 *NAMESPACE
+14d20b17b010c17232d09beb045013b4 *NEWS
 972d5b5a27d32eeed0dfb24148d36828 *R/A.eij.fonction.R
 cbf7d78cf76e13d205ff8d74c5ca76af *R/A.fonction.R
 f1c5effecc6309221ca7c550ed333b1a *R/B.a1.fonction.R
@@ -10,7 +10,7 @@ f1c5effecc6309221ca7c550ed333b1a *R/B.a1.fonction.R
 8aa43b8bc6ca1f0f1df037241b56afb4 *R/B.fonction.Ind.R
 c4310b16980aea6a2c4e0cc4add3753a *R/B.fonction.R
 25b09db4cb3743df6156ed3af506011e *R/DATA.organizer.R
-ca626d4c41cf2927f61ba5cd3b9ed983 *R/HSROC-internal.R
+81e4f9b6f1cc7c948653c6c703f97f6b *R/HSROC-internal.R
 e9041d28ce82a93092126ba087fc6205 *R/HSROC.R
 ad8ea0565976d21f21e9408076d7238c *R/HSROCSummary.R
 cb1ff330847d712de65e71e1e517af0a *R/Initialization.R
@@ -48,12 +48,12 @@ c37d437812aa6943f6998bc21f0a684a *R/truncgamma3.R
 5c61c6739fc4cfd1b911de9ec06ab491 *R/truncnorm.R
 9a2536259e078d7cc17147d774e99290 *R/truncnorm2.R
 e1ecdd32e094680de041785f0772ddf4 *R/truncunif.R
-8a4ad31271b7e0174ca62b788e1e0da5 *data/In.house.rda
-046b94b595ec1539558be650ac0336f9 *data/MRI.rda
+753a23ff16488db60c72a743590ae40a *build/vignette.rds
+7aa4f97b087645a52453f889baf7a792 *data/In.house.rda
+88231af124d239bb060abd57c02fc9ec *data/MRI.rda
 0dc0c0ed9c984f553a95018e14b735c1 *inst/CITATION
-54887d2db5b7a433c226614c0a85a49c *inst/doc/Tutorial.R
 68345e15781ddc788f63c478c4c7d8bc *inst/doc/Tutorial.Rtex
-e49fbb47867cfcfabbc0b12e64450bae *inst/doc/Tutorial.pdf
+44a03f431899e6c22191811970d0272b *inst/doc/Tutorial.pdf
 4265cce2077ce3175c7d2ced94f03541 *man/HSROC.Rd
 b395bbf57d31acba15969395eeda30fc *man/HSROCSummary.Rd
 f3768b1fa33e12c8703d4e6ac4672e6b *man/In.house.Rd
