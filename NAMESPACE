@@ -1,8 +1,17 @@
-useDynLib(HSROC)
+useDynLib(HSROC, .registration = TRUE)
 export(simdata, HSROC, HSROCSummary, beta.parameter)
 
-importFrom(coda, mcmc, HPDinterval, as.mcmc)
-importFrom(MCMCpack, rinvgamma, dinvgamma)
+importFrom("coda", "mcmc", "HPDinterval", "as.mcmc")
+importFrom("MCMCpack", "rinvgamma", "dinvgamma")
 
-import(MASS, lattice)
+import("MASS", "lattice")
+
+importFrom("grDevices", "dev.off", "pdf")
+importFrom("graphics", "abline", "lines", "par", "plot", "points",
+               "symbols", "title")
+importFrom("stats", "cor", "density", "dgamma", "dunif", "median",
+               "pgamma", "pnorm", "qchisq", "qgamma", "qnorm", "quantile",
+               "rbeta", "rgamma", "rmultinom", "rnorm", "runif", "sd")
+importFrom("utils", "menu", "read.table", "write.table")
+
 
